@@ -1,27 +1,19 @@
 ﻿name: rollchart_bldr
-description: Rollchart Builder Prototype
+description: ROLLCHART-BLDR v0.1 prototype
 publish_to: "none"
-
 version: 0.1.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
-    sdk: flutter
-
-  # Export
-  pdf: ^3.11.0
   image: ^4.2.0
-
-dev_dependencies:
-  flutter_test:
+  pdf: ^3.11.0
     sdk: flutter
-  flutter_lints: ^3.0.0
+  cupertino_icons: ^1.0.6
 
 flutter:
   uses-material-design: true
-
   assets:
     - assets/icons/

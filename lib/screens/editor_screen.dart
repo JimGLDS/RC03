@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../models.dart';
 import '../widgets/icon_sprite.dart';
 import 'wizard/screen1.dart';
+import '../export/exporter.dart';
 
 class RollChartEditorScreen extends StatefulWidget {
   final String chartName;
@@ -66,7 +67,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       bits.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
 
-    return bits.isEmpty ? '—' : bits.join(' • ');
+    return bits.isEmpty ? 'â€”' : bits.join(' â€¢ ');
   }
 
   Future<void> editRow(int index) async {
@@ -189,7 +190,31 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     const maxPaperWidth = 360.0;
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.chartName)),
+      appBar: AppBar(
+        title: Text(widget.chartName),
+        actions: [
+          IconButton(
+            tooltip: 'Export CSV',
+            icon: const Icon(Icons.table_view),
+            onPressed: () async {
+              await RollchartExporter.exportCsvWeb(rows, filename: 'rollchart.csv');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart.csv')));
+              }
+            },
+          ),
+          IconButton(
+            tooltip: 'Export PDF (2.13")',
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: () async {
+              await RollchartExporter.exportPdfWeb(rows, filename: 'rollchart_2.13in.pdf');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart_2.13in.pdf')));
+              }
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: maxPaperWidth),
@@ -305,3 +330,4 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+

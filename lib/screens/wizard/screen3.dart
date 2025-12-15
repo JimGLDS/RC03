@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 
@@ -6,7 +6,13 @@ class Screen3 extends StatelessWidget {
   final int recNo;
   final RowDraft draft;
   final List<String> existingResetNames;
-  const Screen3({super.key, required this.recNo, required this.draft, required this.existingResetNames});
+
+  const Screen3({
+    super.key,
+    required this.recNo,
+    required this.draft,
+    required this.existingResetNames,
+  });
 
   String sheetForKey(String iconKey) {
     if (iconKey.startsWith('T')) return 'assets/icons/icons_t.png';
@@ -26,12 +32,18 @@ class Screen3 extends StatelessWidget {
     return want.isNotEmpty && used.contains(want);
   }
 
+  String dashIfEmpty(String? s) {
+    final t = (s ?? '').trim();
+    return t.isEmpty ? '-' : t;
+  }
+
   @override
   Widget build(BuildContext context) {
     final road = ('${draft.roadNo ?? ''} ${draft.roadName ?? ''}').trim();
+    final resetLabel = (draft.resetLabel ?? '').trim();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Review — Row $recNo')),
+      appBar: AppBar(title: Text('Review - Row $recNo')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -42,7 +54,12 @@ class Screen3 extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconSprite(assetPath: sheetForKey(draft.iconKey), index0: indexForKey(draft.iconKey), size: 72, padding: 2),
+                    IconSprite(
+                      assetPath: sheetForKey(draft.iconKey),
+                      index0: indexForKey(draft.iconKey),
+                      size: 72,
+                      padding: 2,
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
@@ -50,16 +67,20 @@ class Screen3 extends StatelessWidget {
                         children: [
                           Text('REC#: $recNo', style: const TextStyle(fontWeight: FontWeight.w900)),
                           const SizedBox(height: 6),
-                          Text('ODO: ${formatHundredths(draft.odoHundredths)}',
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900)),
+                          Text(
+                            'ODO: ${formatHundredths(draft.odoHundredths)}',
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                          ),
                           const SizedBox(height: 6),
                           Text('SURFACE: ${surfaceText(draft.surface)}'),
                           Text('ICON: ${draft.iconKey}'),
-                          Text('TAGS: ${draft.tags.isEmpty ? "—" : draft.tags}'),
-                          Text('RIGHT NOTE: ${draft.rightNote ?? "—"}'),
-                          Text('ROAD: ${road.isEmpty ? "—" : road}'),
-                          Text('DESCR: ${draft.descr ?? "—"}'),
-                          Text('RESET?: ${draft.isReset ? "YES" : "NO"} ${(draft.resetLabel ?? "").trim()}'.trim()),
+                          Text('TAGS: ${dashIfEmpty(draft.tags)}'),
+                          Text('RIGHT NOTE: ${dashIfEmpty(draft.rightNote)}'),
+                          Text('ROAD: ${road.isEmpty ? "-" : road}'),
+                          Text('DESCR: ${dashIfEmpty(draft.descr)}'),
+                          Text(
+                            'RESET?: ${draft.isReset ? "YES" : "NO"}${draft.isReset ? " " + dashIfEmpty(resetLabel) : ""}',
+                          ),
                         ],
                       ),
                     ),
@@ -84,7 +105,9 @@ class Screen3 extends StatelessWidget {
                       if (draft.isReset) {
                         final label = (draft.resetLabel ?? '').trim();
                         if (label.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reset name is required.')));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Reset name is required.')),
+                          );
                           return;
                         }
                         if (resetNameIsDuplicate(label)) {
