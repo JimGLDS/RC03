@@ -180,7 +180,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
             icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
-            onPressed: isComplete ? null : () async {
+            onPressed: () async {
               setState(() => isComplete = !isComplete);
               await _save();
               if (!mounted) return;
@@ -244,7 +244,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
             icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
-            onPressed: isComplete ? null : () async {
+            onPressed: () async {
               setState(() => isComplete = !isComplete);
               await _save();
               if (!mounted) return;
@@ -391,6 +391,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+
+
 
 
 
