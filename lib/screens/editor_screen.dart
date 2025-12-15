@@ -3,6 +3,7 @@ import '../models.dart';
 import '../widgets/icon_sprite.dart';
 import 'wizard/screen1.dart';
 import '../export/exporter.dart';
+import '../storage/local_store.dart';
 
 class RollChartEditorScreen extends StatefulWidget {
   final String chartName;
@@ -13,10 +14,41 @@ class RollChartEditorScreen extends StatefulWidget {
 }
 
 class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    _restore();
+  }
+
   final List<RowDraft> rows = [];
   SurfaceType carrySurface = SurfaceType.DT;
+  bool isComplete = false;
 
-  // New row ODO must increase, except the first row AFTER a RESET row.
+  bool _loaded = false;
+
+  Future<void> _restore() async {
+    final loaded = await LocalStore.loadChart(widget.chartName);
+    if (!mounted) return;
+    setState(() {
+      rows.clear();
+      if (loaded != null) {
+        rows.addAll(loaded.rows);
+        isComplete = loaded.isDone;
+        carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
+      } else {
+        isComplete = false;
+        carrySurface = SurfaceType.DT;
+      }
+      _loaded = true;
+    });
+  }
+
+  Future<void> _save() async {
+    if (!_loaded) return;
+    await LocalStore.saveChart(chartName: widget.chartName, isDone: isComplete, rows: rows);
+  }
+// New row ODO must increase, except the first row AFTER a RESET row.
   int? minOdoForNextRowExclusive() {
     if (rows.isEmpty) return null;
     if (rows.last.isReset) return null;
@@ -104,7 +136,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         rows[index] = updated;
         carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       });
-    }
+      await _save();
+}
   }
 
   Future<void> insertRowAt(int index) async {
@@ -133,7 +166,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       setState(() {
         rows.insert(index, draft);
       });
-    }
+      await _save();
+}
   }
 
   Future<void> deleteRowAt(int index) async {
@@ -143,6 +177,18 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         title: const Text('Delete row?'),
         content: Text('Delete row ${index + 1}? This cannot be undone.'),
         actions: [
+          IconButton(
+            tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
+            icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
+            onPressed: () async {
+              setState(() => isComplete = !isComplete);
+              await _save();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(isComplete ? 'Saved and marked DONE' : 'Saved and marked In Progress')),
+              );
+            },
+          ),
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
         ],
@@ -151,8 +197,10 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     if (ok == true) {
       setState(() {
         rows.removeAt(index);
+        carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       });
-    }
+      await _save();
+}
   }
 
   Future<void> showRowMenu(int index) async {
@@ -193,6 +241,18 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       appBar: AppBar(
         title: Text(widget.chartName),
         actions: [
+          IconButton(
+            tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
+            icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
+            onPressed: () async {
+              setState(() => isComplete = !isComplete);
+              await _save();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(isComplete ? 'Saved and marked DONE' : 'Saved and marked In Progress')),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Export CSV',
             icon: const Icon(Icons.table_view),
@@ -322,7 +382,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
               rows.add(draft);
               carrySurface = draft.surface;
             });
-          }
+            await _save();
+}
         },
         icon: const Icon(Icons.add),
         label: const Text('Add Row'),
@@ -330,4 +391,6 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+
+
 
