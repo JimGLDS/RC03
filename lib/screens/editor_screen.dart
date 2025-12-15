@@ -180,7 +180,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
             icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
-            onPressed: () async {
+            onPressed: isComplete ? null : () async {
               setState(() => isComplete = !isComplete);
               await _save();
               if (!mounted) return;
@@ -244,7 +244,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
             icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
-            onPressed: () async {
+            onPressed: isComplete ? null : () async {
               setState(() => isComplete = !isComplete);
               await _save();
               if (!mounted) return;
@@ -256,7 +256,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: 'Export CSV',
             icon: const Icon(Icons.table_view),
-            onPressed: () async {
+            onPressed: isComplete ? null : () async {
               await RollchartExporter.exportCsvWeb(rows, filename: 'rollchart.csv');
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart.csv')));
@@ -266,7 +266,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: 'Export PDF (2.13")',
             icon: const Icon(Icons.picture_as_pdf),
-            onPressed: () async {
+            onPressed: isComplete ? null : () async {
               await RollchartExporter.exportPdfWeb(rows, filename: 'rollchart_2.13in.pdf');
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart_2.13in.pdf')));
@@ -289,8 +289,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
                     final recNo = i + 1;
 
                     return InkWell(
-                      onTap: () => editRow(i),
-                      onLongPress: () => showRowMenu(i),
+                      onTap: isComplete ? null : () => editRow(i),
+                      onLongPress: isComplete ? null : () => showRowMenu(i),
                       child: Card(
                         elevation: 1,
                         margin: EdgeInsets.zero,
@@ -361,7 +361,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       ),
 
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
+        onPressed: isComplete ? null : () async {
           final recNo = rows.length + 1;
           final draft = await Navigator.push<RowDraft>(
             context,
@@ -391,6 +391,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+
 
 
 
