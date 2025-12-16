@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'screen2.dart';
 
@@ -86,7 +86,7 @@ class _Screen1State extends State<Screen1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.isEdit ? "Edit" : "New"} Row ${widget.recNo} — Miles & Surface')),
+      appBar: AppBar(title: Text('${widget.isEdit ? "Edit" : "New"} Row ${widget.recNo} â€” Miles & Surface')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -207,34 +207,37 @@ class _Screen1State extends State<Screen1> {
     );
   }
 
-  Widget keypad() {
-    final rows = [
-      ['1', '2', '3'],
-      ['4', '5', '6'],
-      ['7', '8', '9'],
-      ['0'],
+    Widget keypad() {
+    // 3x4 keypad layout; keep existing tapDigit() logic.
+    final keys = <String>[
+      '1','2','3',
+      '4','5','6',
+      '7','8','9',
+      '','0','',
     ];
-    return Column(
-      children: [
-        for (final r in rows)
-          Expanded(
-            child: Row(
-              children: [
-                for (final k in r)
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: FilledButton(
-                        onPressed: () => tapDigit(k),
-                        child: Text(k, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GridView.count(
+          crossAxisCount: 3,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.55, // wide, thumb-friendly
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            for (final k in keys)
+              k.isEmpty
+                  ? const SizedBox.shrink()
+                  : FilledButton(
+                      onPressed: () => tapDigit(k),
+                      child: Text(
+                        k,
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                       ),
                     ),
-                  ),
-                if (r.length == 1) ...[const Spacer(), const Spacer()],
-              ],
-            ),
-          ),
-      ],
+          ],
+        );
+      },
     );
   }
 }
