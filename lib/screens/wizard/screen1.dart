@@ -128,61 +128,6 @@ class _Screen1State extends State<Screen1> {
             ),
             const SizedBox(height: 20),
             SizedBox(height: 420, child: keypad()),
-            const SizedBox(height: 20),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 3,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 2.2,
-              children: [
-                surfaceBtn(SurfaceType.PR),
-                surfaceBtn(SurfaceType.GV),
-                surfaceBtn(SurfaceType.DT),
-                surfaceBtn(SurfaceType.IT),
-                surfaceBtn(SurfaceType.TT),
-                SizedBox(
-                  height: 48,
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onPressed: odoValid
-                        ? () async {
-                            final base = widget.initialDraft ??
-                                RowDraft(
-                                  odoHundredths: odoHundredths,
-                                  surface: surface,
-                                  iconKey: 'T01',
-                                );
-
-                            base.odoHundredths = odoHundredths;
-                            base.surface = surface;
-
-                            final result = await Navigator.push<RowDraft>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => Screen2(
-                                  recNo: widget.recNo,
-                                  draft: base,
-                                  existingResetNames: widget.existingResetNames,
-                                ),
-                              ),
-                            );
-                            if (result != null && context.mounted)
-                              Navigator.pop(context, result);
-                          }
-                        : null,
-                    icon: const Icon(Icons.arrow_forward),
-                    label: const Text('NEXT'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
           ],
         ),
       ),
@@ -287,6 +232,7 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
 
 
 
