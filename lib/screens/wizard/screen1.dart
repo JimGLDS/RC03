@@ -174,17 +174,6 @@ class _Screen1State extends State<Screen1> {
             ),
             const SizedBox(height: 6),
             Text('Selected: '),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: backspace,
-                    icon: const Icon(Icons.backspace_outlined),
-                    label: const Text('Backspace'),
-                  ),
-                ),              ],
-            ),
           ],
         ),
       ),
@@ -206,31 +195,37 @@ class _Screen1State extends State<Screen1> {
       ),
     );
   }
-
-    Widget keypad() {
+  Widget keypad() {
     // 3x4 keypad layout; keep existing tapDigit() logic.
     final keys = <String>[
       '1','2','3',
       '4','5','6',
       '7','8','9',
-      '','0','',
+      '','0','BS',
     ];
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return GridView(
-          shrinkWrap: true,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            mainAxisExtent: 58,
-          ),
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            for (final k in keys)
-              k.isEmpty
-                  ? const SizedBox.shrink()
+    return GridView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+        mainAxisExtent: 58,
+      ),
+      children: [
+        for (final k in keys)
+          k.isEmpty
+              ? const SizedBox.shrink()
+              : (k == 'BS'
+                  ? FilledButton(
+                      style: FilledButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: backspace,
+                      child: const Icon(Icons.backspace_outlined),
+                    )
                   : FilledButton(
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.zero,
@@ -241,13 +236,13 @@ class _Screen1State extends State<Screen1> {
                         k,
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                       ),
-                    ),
-          ],
-        );
-      },
+                    )),
+      ],
     );
   }
 }
+
+
 
 
 
