@@ -221,7 +221,7 @@ const SizedBox(height: 8),
           crossAxisCount: 3,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
-          childAspectRatio: 1.55, // wide, thumb-friendly
+          childAspectRatio: 1.0, // wide, thumb-friendly
           physics: const NeverScrollableScrollPhysics(),
           children: [
             for (final k in keys)
@@ -240,6 +240,7 @@ const SizedBox(height: 8),
     );
   }
 }
+
 
 
 
