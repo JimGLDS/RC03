@@ -100,7 +100,6 @@ class _Screen1State extends State<Screen1> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('ODO (auto 2 decimals)', style: TextStyle(fontWeight: FontWeight.w700)),
                           const SizedBox(height: 8),
                           Text(formatHundredths(odoHundredths),
                               style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800)),
@@ -251,6 +250,7 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
 
 
 
