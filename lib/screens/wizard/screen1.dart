@@ -116,20 +116,6 @@ class _Screen1State extends State<Screen1> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              surfaceBtn(SurfaceType.PR),
-                              surfaceBtn(SurfaceType.GV),
-                              surfaceBtn(SurfaceType.DT),
-                              surfaceBtn(SurfaceType.IT),
-                              surfaceBtn(SurfaceType.TT),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text('Selected: ${surfaceText(surface)}'),
                         ],
                       ),
                     ),
@@ -138,7 +124,25 @@ const SizedBox(height: 8),
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(height: 280, child: keypad()),
+            SizedBox(height: 240, child: keypad()),
+            const SizedBox(height: 12),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 3,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+              childAspectRatio: 2.2,
+              children: [
+                surfaceBtn(SurfaceType.PR),
+                surfaceBtn(SurfaceType.GV),
+                surfaceBtn(SurfaceType.DT),
+                surfaceBtn(SurfaceType.IT),
+                surfaceBtn(SurfaceType.TT),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text('Selected: '),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -247,6 +251,8 @@ const SizedBox(height: 8),
     );
   }
 }
+
+
 
 
 
