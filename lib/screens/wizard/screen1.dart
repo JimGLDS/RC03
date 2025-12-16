@@ -116,8 +116,7 @@ class _Screen1State extends State<Screen1> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Road Type (exclusive)', style: TextStyle(fontWeight: FontWeight.w700)),
-                          const SizedBox(height: 8),
+const SizedBox(height: 8),
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
@@ -241,5 +240,7 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
+
 
 
