@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'screens/rollchart_library_screen.dart';
 import 'models.dart';
 import 'screens/list_screen.dart';
 
@@ -18,7 +19,9 @@ class RollChartBldrApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
       ),
-      home: const RollChartListScreen(),
+      home: RollchartLibraryScreen(),
     );
   }
 }
+
+
