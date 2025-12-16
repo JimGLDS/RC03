@@ -138,7 +138,7 @@ const SizedBox(height: 8),
               ),
             ),
             const SizedBox(height: 12),
-            Expanded(child: keypad()),
+            SizedBox(height: 280, child: keypad()),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -217,17 +217,24 @@ const SizedBox(height: 8),
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return GridView.count(
-          crossAxisCount: 3,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 1.0, // wide, thumb-friendly
+        return GridView(
+          shrinkWrap: true,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            mainAxisExtent: 58,
+          ),
           physics: const NeverScrollableScrollPhysics(),
           children: [
             for (final k in keys)
               k.isEmpty
                   ? const SizedBox.shrink()
                   : FilledButton(
+                      style: FilledButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                       onPressed: () => tapDigit(k),
                       child: Text(
                         k,
@@ -240,6 +247,21 @@ const SizedBox(height: 8),
     );
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
