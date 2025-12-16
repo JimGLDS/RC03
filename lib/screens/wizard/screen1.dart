@@ -141,6 +141,10 @@ class _Screen1State extends State<Screen1> {
                 SizedBox(
                   height: 48,
                   child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                     onPressed: odoValid
                         ? () async {
                             final base = widget.initialDraft ??
@@ -173,26 +177,22 @@ class _Screen1State extends State<Screen1> {
               ],
             ),
             const SizedBox(height: 6),
-            Text('Selected: '),
           ],
         ),
       ),
     );
   }
-
   Widget surfaceBtn(SurfaceType s) {
     final selected = surface == s;
-    return SizedBox(
-      width: 72,
-      height: 48,
-      child: FilledButton(
-        onPressed: () => setState(() => surface = s),
-        style: FilledButton.styleFrom(
-          backgroundColor: selected ? null : Theme.of(context).colorScheme.surfaceContainerHighest,
-          foregroundColor: selected ? null : Theme.of(context).colorScheme.onSurface,
-        ),
-        child: Text(surfaceText(s), style: const TextStyle(fontWeight: FontWeight.w900)),
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: selected ? null : Theme.of(context).colorScheme.surfaceContainerHighest,
+        foregroundColor: selected ? null : Theme.of(context).colorScheme.onSurface,
       ),
+      onPressed: () => setState(() => surface = s),
+      child: Text(surfaceText(s), style: const TextStyle(fontWeight: FontWeight.w900)),
     );
   }
   Widget keypad() {
@@ -241,6 +241,9 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
+
+
 
 
 
