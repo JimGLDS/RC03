@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'screen2.dart';
 
@@ -86,7 +86,7 @@ class _Screen1State extends State<Screen1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.isEdit ? "Edit" : "New"} Row ${widget.recNo} â€” Miles & Surface')),
+      appBar: AppBar(leading: const BackButton(), title: const SizedBox.shrink()),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -241,3 +241,5 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
+
