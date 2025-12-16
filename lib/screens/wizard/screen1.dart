@@ -86,7 +86,8 @@ class _Screen1State extends State<Screen1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(leading: const BackButton(), title: const SizedBox.shrink()),
+      appBar:
+          AppBar(leading: const BackButton(), title: const SizedBox.shrink()),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -102,10 +103,14 @@ class _Screen1State extends State<Screen1> {
                         children: [
                           const SizedBox(height: 8),
                           Text(formatHundredths(odoHundredths),
-                              style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w800)),
+                              style: const TextStyle(
+                                  fontSize: 36, fontWeight: FontWeight.w800)),
                           if (odoError != null) ...[
                             const SizedBox(height: 8),
-                            Text(odoError!, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+                            Text(odoError!,
+                                style: const TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w700)),
                           ],
                         ],
                       ),
@@ -114,17 +119,16 @@ class _Screen1State extends State<Screen1> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                        ],
+                        children: [],
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(height: 240, child: keypad()),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            SizedBox(height: 420, child: keypad()),
+            const SizedBox(height: 20),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -143,7 +147,8 @@ class _Screen1State extends State<Screen1> {
                   child: FilledButton.icon(
                     style: FilledButton.styleFrom(
                       padding: EdgeInsets.zero,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: odoValid
                         ? () async {
@@ -167,7 +172,8 @@ class _Screen1State extends State<Screen1> {
                                 ),
                               ),
                             );
-                            if (result != null && context.mounted) Navigator.pop(context, result);
+                            if (result != null && context.mounted)
+                              Navigator.pop(context, result);
                           }
                         : null,
                     icon: const Icon(Icons.arrow_forward),
@@ -182,26 +188,90 @@ class _Screen1State extends State<Screen1> {
       ),
     );
   }
+
   Widget surfaceBtn(SurfaceType s) {
     final selected = surface == s;
     return FilledButton(
       style: FilledButton.styleFrom(
         padding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: selected ? null : Theme.of(context).colorScheme.surfaceContainerHighest,
-        foregroundColor: selected ? null : Theme.of(context).colorScheme.onSurface,
+        backgroundColor: selected
+            ? null
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+        foregroundColor:
+            selected ? null : Theme.of(context).colorScheme.onSurface,
       ),
       onPressed: () => setState(() => surface = s),
-      child: Text(surfaceText(s), style: const TextStyle(fontWeight: FontWeight.w900)),
+      child: Text(surfaceText(s),
+          style: const TextStyle(fontWeight: FontWeight.w900)),
     );
   }
   Widget keypad() {
-    // 3x4 keypad layout; keep existing tapDigit() logic.
-    final keys = <String>[
-      '1','2','3',
-      '4','5','6',
-      '7','8','9',
-      '','0','BS',
+    Widget keyDigit(String d) => FilledButton(
+          style: FilledButton.styleFrom(
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: () => tapDigit(d),
+          child: Text(d, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+        );
+
+    Widget keyBackspace() => FilledButton(
+          style: FilledButton.styleFrom(
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: backspace,
+          child: const Icon(Icons.backspace_outlined),
+        );
+
+    Widget keyNext() => FilledButton.icon(
+          style: FilledButton.styleFrom(
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          onPressed: odoValid
+              ? () async {
+                  // start with existing draft if edit, otherwise new
+                  final base = widget.initialDraft ??
+                      RowDraft(
+                        odoHundredths: odoHundredths,
+                        surface: surface,
+                        iconKey: 'T01',
+                      );
+
+                  base.odoHundredths = odoHundredths;
+                  base.surface = surface;
+
+                  final result = await Navigator.push<RowDraft>(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Screen2(
+                        recNo: widget.recNo,
+                        draft: base,
+                        existingResetNames: widget.existingResetNames,
+                      ),
+                    ),
+                  );
+                  if (result != null && context.mounted) Navigator.pop(context, result);
+                }
+              : null,
+          icon: const Icon(Icons.arrow_forward),
+          label: const Text('NEXT'),
+        );
+
+    final cells = <Widget>[
+      // Rows 1-3 (digits)
+      keyDigit('1'), keyDigit('2'), keyDigit('3'),
+      keyDigit('4'), keyDigit('5'), keyDigit('6'),
+      keyDigit('7'), keyDigit('8'), keyDigit('9'),
+
+      // Row 4
+      const SizedBox.shrink(), keyDigit('0'), keyBackspace(),
+
+      // Rows 5-6 (road types + NEXT)
+      surfaceBtn(SurfaceType.PR), surfaceBtn(SurfaceType.GV), surfaceBtn(SurfaceType.DT),
+      surfaceBtn(SurfaceType.IT), surfaceBtn(SurfaceType.TT), keyNext(),
     ];
 
     return GridView(
@@ -213,59 +283,10 @@ class _Screen1State extends State<Screen1> {
         crossAxisSpacing: 10,
         mainAxisExtent: 58,
       ),
-      children: [
-        for (final k in keys)
-          k.isEmpty
-              ? const SizedBox.shrink()
-              : (k == 'BS'
-                  ? FilledButton(
-                      style: FilledButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: backspace,
-                      child: const Icon(Icons.backspace_outlined),
-                    )
-                  : FilledButton(
-                      style: FilledButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: () => tapDigit(k),
-                      child: Text(
-                        k,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-                      ),
-                    )),
-      ],
+      children: cells,
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
