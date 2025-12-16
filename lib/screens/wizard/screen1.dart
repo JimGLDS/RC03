@@ -138,26 +138,11 @@ class _Screen1State extends State<Screen1> {
                 surfaceBtn(SurfaceType.DT),
                 surfaceBtn(SurfaceType.IT),
                 surfaceBtn(SurfaceType.TT),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text('Selected: '),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: backspace,
-                    icon: const Icon(Icons.backspace_outlined),
-                    label: const Text('Backspace'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
+                SizedBox(
+                  height: 48,
                   child: FilledButton.icon(
                     onPressed: odoValid
                         ? () async {
-                            // start with existing draft if edit, otherwise new
                             final base = widget.initialDraft ??
                                 RowDraft(
                                   odoHundredths: odoHundredths,
@@ -186,6 +171,19 @@ class _Screen1State extends State<Screen1> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 6),
+            Text('Selected: '),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: backspace,
+                    icon: const Icon(Icons.backspace_outlined),
+                    label: const Text('Backspace'),
+                  ),
+                ),              ],
             ),
           ],
         ),
@@ -250,6 +248,8 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
+
 
 
 
