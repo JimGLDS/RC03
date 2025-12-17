@@ -131,7 +131,19 @@ class _Screen2State extends State<Screen2> {
                     final selectedTag = value != 'NEXT' && d.tags.split(RegExp(r'\s+')).contains(value);
                     return InkWell(
                       onTap: () {
-                        if (value == 'NEXT') return;
+                        if (value == 'NEXT') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Screen3(
+                              recNo: widget.recNo,
+                              draft: d,
+                              existingResetNames: widget.existingResetNames,
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
                         setState(() {
                           const groupA = <String>['DG', 'VDG', 'OBS'];
@@ -196,6 +208,7 @@ class _Screen2State extends State<Screen2> {
     );
   }
 }
+
 
 
 
