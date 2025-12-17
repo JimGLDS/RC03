@@ -38,26 +38,13 @@ class _Screen2LState extends State<Screen2L> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Expanded(child: Text('Selected: ${d.iconKey}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18))),
-                    OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('← THRU')),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
-                      ),
-                      child: const Text('RIGHT →'),
-                    ),
-                  ],
-                ),
+                child: const SizedBox.shrink(),
               ),
             ),
             const SizedBox(height: 12),
             Expanded(child: iconGrid()),
             const SizedBox(height: 12),
-            ClarifierButtons(draft: d),
+            const SizedBox.shrink(),
             const SizedBox(height: 8),
             FilledButton.icon(
               onPressed: () async {

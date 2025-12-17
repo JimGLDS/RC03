@@ -39,7 +39,7 @@ class _Screen2State extends State<Screen2> {
             const SizedBox(height: 12),
             Expanded(child: iconGrid(prefix: 'T', title: 'THRU', sheet: sheetT)),
             const SizedBox(height: 12),
-            ClarifierButtons(draft: d),
+            const SizedBox.shrink(),
             const SizedBox(height: 8),
             FilledButton.icon(
               onPressed: () async {
@@ -64,32 +64,7 @@ class _Screen2State extends State<Screen2> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(child: Text('Selected: ${d.iconKey}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18))),
-            OutlinedButton(
-              onPressed: () async {
-                final res = await Navigator.push<RowDraft>(
-                  context,
-                  MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
-                );
-                if (res != null && context.mounted) Navigator.pop(context, res);
-              },
-              child: const Text('LEFT → (2L)'),
-            ),
-            const SizedBox(width: 8),
-            OutlinedButton(
-              onPressed: () async {
-                final res = await Navigator.push<RowDraft>(
-                  context,
-                  MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
-                );
-                if (res != null && context.mounted) Navigator.pop(context, res);
-              },
-              child: const Text('RIGHT → (2R)'),
-            ),
-          ],
-        ),
+        child: const SizedBox.shrink(),
       ),
     );
   }
