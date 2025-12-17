@@ -182,6 +182,40 @@ class _Screen2State extends State<Screen2> {
                     );
                   }
 
+                  // Row 4: screen switcher (LEFT / THRU / RIGHT)
+                  if (i >= 9 && i <= 11) {
+                    String label = '';
+                    int which = i - 9; // 0=L, 1=T, 2=R
+                    if (which == 0) label = 'LEFT';
+                    if (which == 1) label = 'THRU';
+                    if (which == 2) label = 'RIGHT';
+
+                    final isSelected = label == 'THRU';
+                    return InkWell(
+                      onTap: () {
+                        if (isSelected) return;
+                        if (label == 'LEFT') {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
+                        }
+                        if (label == 'RIGHT') {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
+                        }
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            width: isSelected ? 4 : 1,
+                            color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900)),
+                      ),
+                    );
+                  }
+
                   final key = '${prefix}${(i + 1).toString().padLeft(2, '0')}';
                   final selected = d.iconKey == key;
 
@@ -208,6 +242,7 @@ class _Screen2State extends State<Screen2> {
     );
   }
 }
+
 
 
 
