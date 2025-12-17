@@ -27,6 +27,7 @@ class RowDraft {
   int odoHundredths;
   SurfaceType surface;
   String iconKey;
+  String decisionKey;
 
   String tags;
   String? rightNote;
@@ -41,6 +42,7 @@ class RowDraft {
     required this.odoHundredths,
     required this.surface,
     required this.iconKey,
+    this.decisionKey = '',
     this.tags = '',
     this.rightNote,
     this.roadName,
@@ -55,6 +57,7 @@ class RowDraft {
       : odoHundredths = other.odoHundredths,
         surface = other.surface,
         iconKey = other.iconKey,
+        decisionKey = other.decisionKey,
         tags = other.tags,
         rightNote = other.rightNote,
         roadName = other.roadName,

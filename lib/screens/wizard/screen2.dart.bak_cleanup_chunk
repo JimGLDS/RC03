@@ -5,7 +5,7 @@ import '_clarifiers.dart';
 import 'screen2l.dart';
 import 'screen2r.dart';
 import 'screen3.dart';
-import 'decision_cells.dart';
+
 class Screen2 extends StatefulWidget {
   final int recNo;
   final RowDraft draft;
@@ -41,17 +41,6 @@ class _Screen2State extends State<Screen2> {
             const SizedBox(height: 12),
             ClarifierButtons(draft: d),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: () async {
-                final result = await Navigator.push<RowDraft>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Screen3(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames),
-                  ),
-                );
-                if (result != null && context.mounted) Navigator.pop(context, result);
-              },
-              icon: const Icon(Icons.arrow_forward),
               label: const Text('NEXT'),
             ),
           ],
@@ -112,64 +101,78 @@ class _Screen2State extends State<Screen2> {
                 ),
                 itemCount: 21,
                 itemBuilder: (context, i) {
-                  // Decision rows (cells 9..20) are text buttons, not icon keys.
-                  if (i >= 12) {
-                    String label = '';
-                    String value = '';
-                    switch (i) {
-                      case 12: label = 'DG';   value = 'DG'; break;
-                      case 13: label = 'VDG';  value = 'VDG'; break;
-                      case 14: label = 'OBS';  value = 'OBS'; break;
-                      case 15: label = 'SM';   value = 'SM'; break;
-                      case 16: label = 'ORV';  value = 'ORV'; break;
-                      case 17: label = 'FS';   value = 'FS'; break;
-                      case 18: label = 'XC!!'; value = 'XC'; break;
-                      case 19: label = 'RR';   value = 'RR'; break;
-                      case 20: label = 'NEXT'; value = 'NEXT'; break;
-                      default: label = ''; value = ''; break;
-                    }
-                    final selectedTag = value != 'NEXT' && d.tags.split(RegExp(r'\s+')).contains(value);
-                    return InkWell(
-                      onTap: () {
-                        if (value == 'NEXT') return;
-
-                        setState(() {
-                          const groupA = <String>['DG', 'VDG', 'OBS'];
-                          const groupB = <String>['SM', 'ORV', 'FS', 'XC', 'RR'];
-
-                          final tokens = d.tags
-                              .split(RegExp(r'\s+'))
-                              .where((t) => t.trim().isNotEmpty)
-                              .toList();
-
-                          // Toggle OFF if tapped again (allows no tags).
-                          if (tokens.contains(value)) {
-                            tokens.removeWhere((t) => t == value);
-                            d.tags = tokens.join(' ');
-                            return;
-                          }
-
-                          // Exclusive across BOTH tag families (at most one tag total).
-                          tokens.removeWhere((t) => groupA.contains(t) || groupB.contains(t));
-                          tokens.add(value);
-                          d.tags = tokens.join(' ');
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            width: selectedTag ? 4 : 1,
-                            color: selectedTag ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  if (i >= 9) {
+                    Widget tile(String label, VoidCallback? onPressed, {IconData? icon, double fontSize = 18}) {
+                      return FilledButton(
+                        style: FilledButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        alignment: Alignment.center,
-                        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900)),
-                      ),
-                    );
-                  }
+                        onPressed: onPressed,
+                        child: icon != null
+                            ? Icon(icon)
+                            : Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w900)),
+                      );
+                    }
 
+                    // Row mapping (3x7):
+                    // i  0-8  : existing 3x3 icon grid (keep current logic below)
+                    // i  9-11 : LEFT | + | RT
+                    // i 12-14 : DG | VDG | OBS
+                    // i 15-17 : SM | SM ORV | FS
+                    // i 18-20 : XC!! | RR | NEXT
+                    switch (i) {
+                      case 9:
+                        return tile('LEFT', () async {
+                          final res = await Navigator.push<RowDraft>(
+                            context,
+                            MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
+                          );
+                          if (res != null && context.mounted) Navigator.pop(context, res);
+                        });
+                      case 10:
+                        return tile('+', null);
+                      case 11:
+                        return tile('RT', () async {
+                          final res = await Navigator.push<RowDraft>(
+                            context,
+                            MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
+                          );
+                          if (res != null && context.mounted) Navigator.pop(context, res);
+                        });
+                      case 12:
+                        return tile('DG', null);
+                      case 13:
+                        return tile('VDG', null, fontSize: 16);
+                      case 14:
+                        return tile('OBS', null, fontSize: 16);
+                      case 15:
+                        return tile('SM', null);
+                      case 16:
+                        return tile('SM ORV', null, fontSize: 14);
+                      case 17:
+                        return tile('FS', null);
+                      case 18:
+                        return tile('XC!!', null, fontSize: 16);
+                      case 19:
+                        return tile('RR', null);
+                      case 20:
+                        return FilledButton(
+                          style: FilledButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () async {
+                            final result = await Navigator.push<RowDraft>(
+                              context,
+                              MaterialPageRoute(builder: (_) => Screen3(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
+                            );
+                            if (result != null && context.mounted) Navigator.pop(context, result);
+                          },
+                          child: const Icon(Icons.play_arrow),
+                        );
+                    }
+                  }
                   final key = '${prefix}${(i + 1).toString().padLeft(2, '0')}';
                   final selected = d.iconKey == key;
 
@@ -196,9 +199,6 @@ class _Screen2State extends State<Screen2> {
     );
   }
 }
-
-
-
 
 
 

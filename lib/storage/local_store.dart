@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
 
@@ -170,3 +170,5 @@ class LocalStore {
     return (isDone: isDone, rows: rows);
   }
 }
+
+
