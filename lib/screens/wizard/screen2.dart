@@ -38,22 +38,6 @@ class _Screen2State extends State<Screen2> {
             topBar(context),
             const SizedBox(height: 12),
             Expanded(child: iconGrid(prefix: 'T', title: 'THRU', sheet: sheetT)),
-            const SizedBox(height: 12),
-            const SizedBox.shrink(),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: () async {
-                final result = await Navigator.push<RowDraft>(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Screen3(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames),
-                  ),
-                );
-                if (result != null && context.mounted) Navigator.pop(context, result);
-              },
-              icon: const Icon(Icons.arrow_forward),
-              label: const Text('NEXT'),
-            ),
           ],
         ),
       ),
@@ -61,12 +45,7 @@ class _Screen2State extends State<Screen2> {
   }
 
   Widget topBar(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: const SizedBox.shrink(),
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget iconGrid({required String prefix, required String title, required String sheet}) {

@@ -35,28 +35,9 @@ class _Screen2LState extends State<Screen2L> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: const SizedBox.shrink(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(child: iconGrid()),
-            const SizedBox(height: 12),
             const SizedBox.shrink(),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: () async {
-                final result = await Navigator.push<RowDraft>(
-                  context,
-                  MaterialPageRoute(builder: (_) => Screen3(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)),
-                );
-                if (result != null && context.mounted) Navigator.pop(context, result);
-              },
-              icon: const Icon(Icons.arrow_forward),
-              label: const Text('NEXT'),
-            ),
+            const SizedBox.shrink(),
+            Expanded(child: iconGrid()),
           ],
         ),
       ),
