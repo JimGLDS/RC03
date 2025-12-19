@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'screen2.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
@@ -30,7 +30,7 @@ class _Screen2RState extends State<Screen2R> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision â€” RIGHT (2R)')),
+      appBar: AppBar(title: const Text('Decision — RIGHT (2R)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -80,24 +80,20 @@ class _Screen2RState extends State<Screen2R> {
                     }
                     final selectedTag = value != 'NEXT' && d.tags.split(RegExp(r'\s+')).contains(value);
                     return InkWell(
-                      onTap: () async {
+                      onTap: () {
                         if (value == 'NEXT') {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => Screen3(
-        recNo: widget.recNo,
-        draft: d,
-        existingResetNames: widget.existingResetNames,
-      ),
-    ),
-  );
-
-  if (result != null && context.mounted) {
-    Navigator.pop(context, result);
-  }
-  return;
-}
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Screen3(
+                              recNo: widget.recNo,
+                              draft: d,
+                              existingResetNames: widget.existingResetNames,
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
                         setState(() {
                           const groupA = <String>['DG', 'VDG', 'OBS'];
@@ -142,7 +138,7 @@ class _Screen2RState extends State<Screen2R> {
 
                     final isSelected = label == 'RIGHT';
                     return InkWell(
-                      onTap: () async {
+                      onTap: () {
                         if (isSelected) return;
                         if (label == 'LEFT') {
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
@@ -192,8 +188,6 @@ class _Screen2RState extends State<Screen2R> {
     );
   }
 }
-
-
 
 
 

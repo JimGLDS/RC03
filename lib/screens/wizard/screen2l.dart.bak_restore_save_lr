@@ -1,36 +1,36 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'screen2.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 import '_clarifiers.dart';
-import 'screen2l.dart';
+import 'screen2r.dart';
 import 'screen3.dart';
 
-class Screen2R extends StatefulWidget {
+class Screen2L extends StatefulWidget {
   final int recNo;
   final RowDraft draft;
   final List<String> existingResetNames;
-  const Screen2R({super.key, required this.recNo, required this.draft, required this.existingResetNames});
+  const Screen2L({super.key, required this.recNo, required this.draft, required this.existingResetNames});
 
   @override
-  State<Screen2R> createState() => _Screen2RState();
+  State<Screen2L> createState() => _Screen2LState();
 }
 
-class _Screen2RState extends State<Screen2R> {
+class _Screen2LState extends State<Screen2L> {
   late RowDraft d;
-  static const sheetR = 'assets/icons/icons_r.png';
+  static const sheetL = 'assets/icons/icons_l.png';
 
   @override
   void initState() {
     super.initState();
     d = widget.draft;
-    if (!d.iconKey.startsWith('R')) d.iconKey = 'R01';
+    if (!d.iconKey.startsWith('L')) d.iconKey = 'L01';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision â€” RIGHT (2R)')),
+      appBar: AppBar(title: const Text('Decision — LEFT (2L)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -50,7 +50,7 @@ class _Screen2RState extends State<Screen2R> {
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            const Text('RIGHT', style: TextStyle(fontWeight: FontWeight.w900)),
+            const Text('LEFT', style: TextStyle(fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
             Expanded(
               child: GridView.builder(
@@ -80,24 +80,20 @@ class _Screen2RState extends State<Screen2R> {
                     }
                     final selectedTag = value != 'NEXT' && d.tags.split(RegExp(r'\s+')).contains(value);
                     return InkWell(
-                      onTap: () async {
+                      onTap: () {
                         if (value == 'NEXT') {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => Screen3(
-        recNo: widget.recNo,
-        draft: d,
-        existingResetNames: widget.existingResetNames,
-      ),
-    ),
-  );
-
-  if (result != null && context.mounted) {
-    Navigator.pop(context, result);
-  }
-  return;
-}
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Screen3(
+                              recNo: widget.recNo,
+                              draft: d,
+                              existingResetNames: widget.existingResetNames,
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
                         setState(() {
                           const groupA = <String>['DG', 'VDG', 'OBS'];
@@ -140,15 +136,15 @@ class _Screen2RState extends State<Screen2R> {
                     if (which == 1) label = 'THRU';
                     if (which == 2) label = 'RIGHT';
 
-                    final isSelected = label == 'RIGHT';
+                    final isSelected = label == 'LEFT';
                     return InkWell(
-                      onTap: () async {
+                      onTap: () {
                         if (isSelected) return;
-                        if (label == 'LEFT') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
-                        }
                         if (label == 'THRU') {
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
+                        }
+                        if (label == 'RIGHT') {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
                         }
                       },
                       child: Container(
@@ -166,7 +162,7 @@ class _Screen2RState extends State<Screen2R> {
                     );
                   }
 
-                  final key = 'R${(i + 1).toString().padLeft(2, '0')}';
+                  final key = 'L${(i + 1).toString().padLeft(2, '0')}';
                   final selected = d.iconKey == key;
 
                   return InkWell(
@@ -180,7 +176,7 @@ class _Screen2RState extends State<Screen2R> {
                         ),
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       ),
-                      child: Center(child: IconSprite(assetPath: sheetR, index0: i, size: 64, padding: 2)),
+                      child: Center(child: IconSprite(assetPath: sheetL, index0: i, size: 64, padding: 2)),
                     ),
                   );
                 },
@@ -192,8 +188,6 @@ class _Screen2RState extends State<Screen2R> {
     );
   }
 }
-
-
 
 
 

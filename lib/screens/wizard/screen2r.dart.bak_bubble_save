@@ -82,22 +82,18 @@ class _Screen2RState extends State<Screen2R> {
                     return InkWell(
                       onTap: () async {
                         if (value == 'NEXT') {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => Screen3(
-        recNo: widget.recNo,
-        draft: d,
-        existingResetNames: widget.existingResetNames,
-      ),
-    ),
-  );
-
-  if (result != null && context.mounted) {
-    Navigator.pop(context, result);
-  }
-  return;
-}
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => Screen3(
+                              recNo: widget.recNo,
+                              draft: d,
+                              existingResetNames: widget.existingResetNames,
+                            ),
+                          ),
+                        );
+                        return;
+                      }
 
                         setState(() {
                           const groupA = <String>['DG', 'VDG', 'OBS'];
@@ -192,7 +188,6 @@ class _Screen2RState extends State<Screen2R> {
     );
   }
 }
-
 
 
 

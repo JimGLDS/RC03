@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 import '_clarifiers.dart';
@@ -30,7 +30,7 @@ class _Screen2State extends State<Screen2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision — THRU (2T)')),
+      appBar: AppBar(title: const Text('Decision â€” THRU (2T)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -84,20 +84,24 @@ class _Screen2State extends State<Screen2> {
                     }
                     final selectedTag = value != 'NEXT' && d.tags.split(RegExp(r'\s+')).contains(value);
                     return InkWell(
-                      onTap: () {
+                      onTap: () async {
                         if (value == 'NEXT') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => Screen3(
-                              recNo: widget.recNo,
-                              draft: d,
-                              existingResetNames: widget.existingResetNames,
-                            ),
-                          ),
-                        );
-                        return;
-                      }
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => Screen3(
+        recNo: widget.recNo,
+        draft: d,
+        existingResetNames: widget.existingResetNames,
+      ),
+    ),
+  );
+
+  if (result != null) {
+    Navigator.pop(context, result);
+  }
+  return;
+}
 
                         setState(() {
                           const groupA = <String>['DG', 'VDG', 'OBS'];
@@ -146,14 +150,42 @@ class _Screen2State extends State<Screen2> {
 
                     final isSelected = label == 'THRU';
                     return InkWell(
-                      onTap: () {
+                      onTap: () async {
                         if (isSelected) return;
                         if (label == 'LEFT') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
-                        }
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => Screen2L(
+        recNo: widget.recNo,
+        draft: d,
+        existingResetNames: widget.existingResetNames,
+      ),
+    ),
+  );
+
+  if (result != null && context.mounted) {
+    Navigator.pop(context, result);
+  }
+  return;
+}
                         if (label == 'RIGHT') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
-                        }
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => Screen2R(
+        recNo: widget.recNo,
+        draft: d,
+        existingResetNames: widget.existingResetNames,
+      ),
+    ),
+  );
+
+  if (result != null && context.mounted) {
+    Navigator.pop(context, result);
+  }
+  return;
+}
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -196,6 +228,8 @@ class _Screen2State extends State<Screen2> {
     );
   }
 }
+
+
 
 
 

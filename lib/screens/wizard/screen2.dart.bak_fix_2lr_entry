@@ -1,56 +1,60 @@
 ﻿import 'package:flutter/material.dart';
-import 'screen2.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 import '_clarifiers.dart';
 import 'screen2l.dart';
+import 'screen2r.dart';
 import 'screen3.dart';
-
-class Screen2R extends StatefulWidget {
+import 'decision_cells.dart';
+class Screen2 extends StatefulWidget {
   final int recNo;
   final RowDraft draft;
   final List<String> existingResetNames;
-  const Screen2R({super.key, required this.recNo, required this.draft, required this.existingResetNames});
+  const Screen2({super.key, required this.recNo, required this.draft, required this.existingResetNames});
 
   @override
-  State<Screen2R> createState() => _Screen2RState();
+  State<Screen2> createState() => _Screen2State();
 }
 
-class _Screen2RState extends State<Screen2R> {
+class _Screen2State extends State<Screen2> {
   late RowDraft d;
-  static const sheetR = 'assets/icons/icons_r.png';
+  static const sheetT = 'assets/icons/icons_t.png';
 
   @override
   void initState() {
     super.initState();
     d = widget.draft;
-    if (!d.iconKey.startsWith('R')) d.iconKey = 'R01';
+    if (!d.iconKey.startsWith('T')) d.iconKey = 'T01';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision â€” RIGHT (2R)')),
+      appBar: AppBar(title: const Text('Decision â€” THRU (2T)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const SizedBox.shrink(),
-            const SizedBox.shrink(),
-            Expanded(child: iconGrid()),
+            topBar(context),
+            const SizedBox(height: 12),
+            Expanded(child: iconGrid(prefix: 'T', title: 'THRU', sheet: sheetT)),
           ],
         ),
       ),
     );
   }
 
-  Widget iconGrid() {
+  Widget topBar(BuildContext context) {
+    return const SizedBox.shrink();
+  }
+
+  Widget iconGrid({required String prefix, required String title, required String sheet}) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
-            const Text('RIGHT', style: TextStyle(fontWeight: FontWeight.w900)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
             const SizedBox(height: 8),
             Expanded(
               child: GridView.builder(
@@ -62,7 +66,7 @@ class _Screen2RState extends State<Screen2R> {
                 ),
                 itemCount: 21,
                 itemBuilder: (context, i) {
-                  // Decision rows (cells 12..20) are text buttons, not icon keys.
+                  // Decision rows (cells 9..20) are text buttons, not icon keys.
                   if (i >= 12) {
                     String label = '';
                     String value = '';
@@ -93,7 +97,7 @@ class _Screen2RState extends State<Screen2R> {
     ),
   );
 
-  if (result != null && context.mounted) {
+  if (result != null) {
     Navigator.pop(context, result);
   }
   return;
@@ -124,7 +128,11 @@ class _Screen2RState extends State<Screen2R> {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(width: selectedTag ? 4 : 1),
+                          border: Border.all(
+                            width: selectedTag ? 4 : 1,
+                            color: selectedTag ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
                         ),
                         alignment: Alignment.center,
                         child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900)),
@@ -140,15 +148,15 @@ class _Screen2RState extends State<Screen2R> {
                     if (which == 1) label = 'THRU';
                     if (which == 2) label = 'RIGHT';
 
-                    final isSelected = label == 'RIGHT';
+                    final isSelected = label == 'THRU';
                     return InkWell(
                       onTap: () async {
                         if (isSelected) return;
                         if (label == 'LEFT') {
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2L(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
                         }
-                        if (label == 'THRU') {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
+                        if (label == 'RIGHT') {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Screen2R(recNo: widget.recNo, draft: d, existingResetNames: widget.existingResetNames)));
                         }
                       },
                       child: Container(
@@ -166,7 +174,7 @@ class _Screen2RState extends State<Screen2R> {
                     );
                   }
 
-                  final key = 'R${(i + 1).toString().padLeft(2, '0')}';
+                  final key = '${prefix}${(i + 1).toString().padLeft(2, '0')}';
                   final selected = d.iconKey == key;
 
                   return InkWell(
@@ -180,7 +188,7 @@ class _Screen2RState extends State<Screen2R> {
                         ),
                         color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       ),
-                      child: Center(child: IconSprite(assetPath: sheetR, index0: i, size: 64, padding: 2)),
+                      child: Center(child: IconSprite(assetPath: sheet, index0: i, size: 64, padding: 2)),
                     ),
                   );
                 },
@@ -192,6 +200,9 @@ class _Screen2RState extends State<Screen2R> {
     );
   }
 }
+
+
+
 
 
 
