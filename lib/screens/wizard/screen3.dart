@@ -2,7 +2,7 @@
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 
-class Screen3 extends StatelessWidget {
+class Screen3 extends StatefulWidget {
   final int recNo;
   final RowDraft draft;
   final List<String> existingResetNames;
@@ -13,6 +13,32 @@ class Screen3 extends StatelessWidget {
     required this.draft,
     required this.existingResetNames,
   });
+
+  @override
+  State<Screen3> createState() => _Screen3State();
+}
+
+class _Screen3State extends State<Screen3> {
+  late final RowDraft d;
+
+  late final TextEditingController roadNoCtl;
+  late final TextEditingController roadNameCtl;
+
+  @override
+  void initState() {
+    super.initState();
+    d = widget.draft;
+
+    roadNoCtl = TextEditingController(text: (d.roadNo ?? '').trim());
+    roadNameCtl = TextEditingController(text: (d.roadName ?? '').trim());
+  }
+
+  @override
+  void dispose() {
+    roadNoCtl.dispose();
+    roadNameCtl.dispose();
+    super.dispose();
+  }
 
   String sheetForKey(String iconKey) {
     if (iconKey.startsWith('T')) return 'assets/icons/icons_t.png';
@@ -26,24 +52,79 @@ class Screen3 extends StatelessWidget {
     return (n - 1).clamp(0, 8);
   }
 
-  bool resetNameIsDuplicate(String name) {
-    final want = name.trim().toLowerCase();
-    final used = existingResetNames.map((e) => e.trim().toLowerCase()).toSet();
-    return want.isNotEmpty && used.contains(want);
-  }
-
   String dashIfEmpty(String? s) {
     final t = (s ?? '').trim();
     return t.isEmpty ? '-' : t;
   }
 
+  void applyRoadEdits() {
+    d.roadNo = roadNoCtl.text.trim();
+    d.roadName = roadNameCtl.text.trim();
+  }
+
+  Future<void> promptForResetName({bool turningOn = false}) async {
+    final initial = (d.resetLabel ?? '').trim();
+
+    final result = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _ResetNameDialog(
+        initial: initial,
+        existingResetNames: widget.existingResetNames,
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (result == null) {
+      // Cancel => if we were turning on, revert the switch.
+      if (turningOn) {
+        setState(() {
+          d.isReset = false;
+          d.resetLabel = '';
+        });
+      }
+      return;
+    }
+
+    setState(() {
+      d.isReset = true;
+      d.resetLabel = result.trim();
+    });
+  }
+
+  void trySave() {
+    applyRoadEdits();
+
+    if (d.isReset) {
+      final label = (d.resetLabel ?? '').trim();
+      if (label.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reset name is required.')),
+        );
+        return;
+      }
+      // Duplicate check is already enforced in the dialog, but keep this as safety:
+      final want = label.toLowerCase();
+      final used = widget.existingResetNames.map((e) => e.trim().toLowerCase()).toSet();
+      if (used.contains(want)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Reset name "$label" is already used. Choose a new name.')),
+        );
+        return;
+      }
+    }
+
+    Navigator.pop(context, d);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final road = ('${draft.roadNo ?? ''} ${draft.roadName ?? ''}').trim();
-    final resetLabel = (draft.resetLabel ?? '').trim();
+    final roadDisplay = ('${d.roadNo ?? ''} ${d.roadName ?? ''}').trim();
+    final resetLabel = (d.resetLabel ?? '').trim();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Review - Row $recNo')),
+      appBar: AppBar(title: Text('Review / Edit - Row ${widget.recNo}')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -55,8 +136,8 @@ class Screen3 extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     IconSprite(
-                      assetPath: sheetForKey(draft.iconKey),
-                      index0: indexForKey(draft.iconKey),
+                      assetPath: sheetForKey(d.iconKey),
+                      index0: indexForKey(d.iconKey),
                       size: 72,
                       padding: 2,
                     ),
@@ -65,21 +146,21 @@ class Screen3 extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('REC#: $recNo', style: const TextStyle(fontWeight: FontWeight.w900)),
+                          Text('REC#: ${widget.recNo}', style: const TextStyle(fontWeight: FontWeight.w900)),
                           const SizedBox(height: 6),
                           Text(
-                            'ODO: ${formatHundredths(draft.odoHundredths)}',
+                            'ODO: ${formatHundredths(d.odoHundredths)}',
                             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
                           ),
                           const SizedBox(height: 6),
-                          Text('SURFACE: ${surfaceText(draft.surface)}'),
-                          Text('ICON: ${draft.iconKey}'),
-                          Text('TAGS: ${dashIfEmpty(draft.tags)}'),
-                          Text('RIGHT NOTE: ${dashIfEmpty(draft.rightNote)}'),
-                          Text('ROAD: ${road.isEmpty ? "-" : road}'),
-                          Text('DESCR: ${dashIfEmpty(draft.descr)}'),
+                          Text('SURFACE: ${surfaceText(d.surface)}'),
+                          Text('ICON: ${d.iconKey}'),
+                          Text('TAGS: ${dashIfEmpty(d.tags)}'),
+                          Text('RIGHT NOTE: ${dashIfEmpty(d.rightNote)}'),
+                          Text('ROAD: ${roadDisplay.isEmpty ? "-" : roadDisplay}'),
+                          Text('DESCR: ${dashIfEmpty(d.descr)}'),
                           Text(
-                            'RESET?: ${draft.isReset ? "YES" : "NO"}${draft.isReset ? " " + dashIfEmpty(resetLabel) : ""}',
+                            'RESET?: ${d.isReset ? "YES" : "NO"}${d.isReset ? " " + (resetLabel.isEmpty ? "-" : resetLabel) : ""}',
                           ),
                         ],
                       ),
@@ -88,7 +169,100 @@ class Screen3 extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(),
+
+            const SizedBox(height: 12),
+
+            Expanded(
+              child: SingleChildScrollView(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Road', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 110,
+                              child: TextField(
+                                controller: roadNoCtl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Road No',
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (_) => setState(applyRoadEdits),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: roadNameCtl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Road Name',
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (_) => setState(applyRoadEdits),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 18),
+                        const Divider(),
+                        const SizedBox(height: 12),
+
+                        Row(
+                          children: [
+                            const Text('Reset', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                            const Spacer(),
+                            Switch(
+                              value: d.isReset,
+                              onChanged: (v) async {
+                                if (v) {
+                                  // Flip on, then require name via dialog.
+                                  setState(() => d.isReset = true);
+                                  await promptForResetName(turningOn: true);
+                                } else {
+                                  setState(() {
+                                    d.isReset = false;
+                                    d.resetLabel = '';
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+
+                        if (d.isReset) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Reset Name: ${resetLabel.isEmpty ? "-" : resetLabel}',
+                                  style: const TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              OutlinedButton.icon(
+                                onPressed: () async => await promptForResetName(),
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Edit'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
             Row(
               children: [
                 Expanded(
@@ -101,26 +275,9 @@ class Screen3 extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () {
-                      if (draft.isReset) {
-                        final label = (draft.resetLabel ?? '').trim();
-                        if (label.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Reset name is required.')),
-                          );
-                          return;
-                        }
-                        if (resetNameIsDuplicate(label)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Reset name "$label" is already used. Choose a new name.')),
-                          );
-                          return;
-                        }
-                      }
-                      Navigator.pop(context, draft);
-                    },
-                    icon: const Icon(Icons.save_outlined),
-                    label: const Text('SAVE'),
+                    onPressed: trySave,
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save'),
                   ),
                 ),
               ],
@@ -128,6 +285,86 @@ class Screen3 extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ResetNameDialog extends StatefulWidget {
+  final String initial;
+  final List<String> existingResetNames;
+
+  const _ResetNameDialog({
+    required this.initial,
+    required this.existingResetNames,
+  });
+
+  @override
+  State<_ResetNameDialog> createState() => _ResetNameDialogState();
+}
+
+class _ResetNameDialogState extends State<_ResetNameDialog> {
+  late final TextEditingController ctl;
+  String? errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    ctl = TextEditingController(text: widget.initial);
+  }
+
+  @override
+  void dispose() {
+    ctl.dispose();
+    super.dispose();
+  }
+
+  bool isDuplicate(String name) {
+    final want = name.trim().toLowerCase();
+    final used = widget.existingResetNames.map((e) => e.trim().toLowerCase()).toSet();
+    return want.isNotEmpty && used.contains(want);
+  }
+
+  void validate() {
+    final t = ctl.text.trim();
+    if (t.isEmpty) {
+      setState(() => errorText = 'Reset name is required.');
+      return;
+    }
+    if (isDuplicate(t)) {
+      setState(() => errorText = 'That reset name is already used.');
+      return;
+    }
+    setState(() => errorText = null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Reset Name'),
+      content: TextField(
+        controller: ctl,
+        autofocus: true,
+        decoration: InputDecoration(
+          labelText: 'Enter reset name',
+          errorText: errorText,
+        ),
+        onChanged: (_) => validate(),
+        onSubmitted: (_) => validate(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            validate();
+            if (errorText != null) return;
+            Navigator.pop(context, ctl.text.trim());
+          },
+          child: const Text('OK'),
+        ),
+      ],
     );
   }
 }
