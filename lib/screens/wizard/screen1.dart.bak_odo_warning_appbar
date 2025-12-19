@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'screen2.dart';
 
@@ -86,21 +86,8 @@ class _Screen1State extends State<Screen1> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(),
-        title: SizedBox(
-          height: 18, // reserved space so the layout never jumps
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              odoError ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 13),
-            ),
-          ),
-        ),
-      ),
+      appBar:
+          AppBar(leading: const BackButton(), title: const SizedBox.shrink()),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -118,6 +105,13 @@ class _Screen1State extends State<Screen1> {
                           Text(formatHundredths(odoHundredths),
                               style: const TextStyle(
                                   fontSize: 36, fontWeight: FontWeight.w800)),
+                          if (odoError != null) ...[
+                            const SizedBox(height: 8),
+                            Text(odoError!,
+                                style: const TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w700)),
+                          ],
                         ],
                       ),
                     ),
@@ -238,9 +232,6 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
-
-
-
 
 
 
