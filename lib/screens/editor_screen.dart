@@ -108,7 +108,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       bits.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
 
-    return bits.isEmpty ? '—' : bits.join(' • ');
+    return (bits.isEmpty ? '—' : bits.join(' • ')).replaceAll('[','').replaceAll(']','');
   }
 
   Future<void> editRow(int index) async {
@@ -408,6 +408,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+
 
 
 

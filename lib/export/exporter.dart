@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -126,7 +126,7 @@ class RollchartExporter {
       final label = (r.resetLabel ?? '').trim();
       parts.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
-    return parts.isEmpty ? '-' : parts.join(' • ');
+    return parts.isEmpty ? '-' : parts.join(' � ');
   }
 
   static Future<Uint8List> buildThermalPdfBytes(List<RowDraft> rows) async {
@@ -148,7 +148,25 @@ class RollchartExporter {
     const footerH = 14.0;
 
     final heightPts = margin * 2 + headerH + footerH + rows.length * rowH;
-    final pageFormat = PdfPageFormat(widthPts, heightPts);
+    
+
+    String _abbrTags(String s) {
+      // Expand bracketed abbreviations to full phrases for thermal PDF output.
+      return s
+          .replaceAll('[VDG]', 'Very Dim Grassy')
+          .replaceAll('[DG]', 'Dim grassy')
+          .replaceAll('[OBS]', 'Obscure')
+          .replaceAll('[XC!!]', 'XC!!')
+          .replaceAll('[XC]', 'XC!!')
+
+          // Also handle unbracketed abbreviations, just in case
+          .replaceAll('VDG', 'Very Dim Grassy')
+          .replaceAll('DG', 'Dim grassy')
+          .replaceAll('OBS', 'Obscure')
+          .replaceAll('[', '')
+          .replaceAll(']', '');
+      // XC!! stays XC!!
+    }
 
     final items = <pw.Widget>[];
 
@@ -203,7 +221,7 @@ class RollchartExporter {
                   children: [
                     pw.Text(surf, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                     pw.SizedBox(height: 2),
-                    pw.Text(info, maxLines: 1, overflow: pw.TextOverflow.clip, style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(_abbrTags(info), maxLines: 1, overflow: pw.TextOverflow.clip, style: const pw.TextStyle(fontSize: 8)),
                   ],
                 ),
               ),
@@ -220,6 +238,7 @@ class RollchartExporter {
         child: pw.Text('END', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
       ),
     );
+    final pageFormat = PdfPageFormat(widthPts, heightPts);
 
     doc.addPage(
       pw.Page(
@@ -244,4 +263,9 @@ class RollchartExporter {
 
   static bool get isWeb => kIsWeb;
 }
+
+
+
+
+
 
