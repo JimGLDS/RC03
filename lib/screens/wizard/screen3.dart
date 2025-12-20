@@ -162,6 +162,7 @@ class _Screen3State extends State<Screen3> {
                           Text(
                             'RESET?: ${d.isReset ? "YES" : "NO"}${d.isReset ? " " + (resetLabel.isEmpty ? "-" : resetLabel) : ""}',
                           ),
+                          Text("GAS?: ${d.isGas ? 'YES' : 'NO'}"),
                         ],
                       ),
                     ),
@@ -170,6 +171,20 @@ class _Screen3State extends State<Screen3> {
               ),
             ),
 
+                      const SizedBox(height: 8),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text("Gas?"),
+                        value: d.isGas,
+                        onChanged: (v) {
+                          setState(() {
+                            d.isGas = v;
+                            if (v) {
+                              d.gasOdoHundredths = d.odoHundredths;
+                            }
+                          });
+                        },
+                      ),
             const SizedBox(height: 12),
 
             Expanded(
