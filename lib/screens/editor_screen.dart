@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models.dart';
 import '../widgets/icon_sprite.dart';
 import 'wizard/screen1.dart';
@@ -14,6 +14,8 @@ class RollChartEditorScreen extends StatefulWidget {
 }
 
 class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
+  final ScrollController _listCtrl = ScrollController();
+
 
   @override
   void initState() {
@@ -41,6 +43,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         carrySurface = SurfaceType.DT;
       }
       _loaded = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     });
   }
 
@@ -48,6 +51,12 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     if (!_loaded) return;
     await LocalStore.saveChart(chartName: widget.chartName, isDone: isComplete, rows: rows);
   }
+
+  void _scrollToBottom() {
+    if (!_listCtrl.hasClients) return;
+    _listCtrl.jumpTo(_listCtrl.position.maxScrollExtent);
+  }
+
 // New row ODO must increase, except the first row AFTER a RESET row.
   int? minOdoForNextRowExclusive() {
     if (rows.isEmpty) return null;
@@ -99,7 +108,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       bits.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
 
-    return bits.isEmpty ? 'â€”' : bits.join(' â€¢ ');
+    return bits.isEmpty ? '—' : bits.join(' • ');
   }
 
   Future<void> editRow(int index) async {
@@ -234,6 +243,12 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
   }
 
   @override
+  void dispose() {
+    _listCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     const maxPaperWidth = 360.0;
 
@@ -281,7 +296,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           child: rows.isEmpty
               ? const Center(child: Text('No rows yet.\nTap Add Row.', textAlign: TextAlign.center))
               : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                   controller: _listCtrl,
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 120),
                   itemCount: rows.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, i) {
@@ -295,7 +311,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
                         elevation: 1,
                         margin: EdgeInsets.zero,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -383,6 +399,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
               carrySurface = draft.surface;
             });
             await _save();
+             WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
 }
         },
         icon: const Icon(Icons.add),
@@ -391,6 +408,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+
+
 
 
 
