@@ -59,7 +59,7 @@ class _Screen3State extends State<Screen3> {
 
   void applyRoadEdits() {
     d.roadNo = roadNoCtl.text.trim();
-    d.roadName = roadNameCtl.text.trim();
+    d.roadName = roadNameCtl.text.trim().toUpperCase();
   }
 
   Future<void> promptForResetName({bool turningOn = false}) async {
@@ -156,9 +156,7 @@ class _Screen3State extends State<Screen3> {
                           Text('SURFACE: ${surfaceText(d.surface)}'),
                           Text('ICON: ${d.iconKey}'),
                           Text('TAGS: ${dashIfEmpty(d.tags)}'),
-                          Text('RIGHT NOTE: ${dashIfEmpty(d.rightNote)}'),
                           Text('ROAD: ${roadDisplay.isEmpty ? "-" : roadDisplay}'),
-                          Text('DESCR: ${dashIfEmpty(d.descr)}'),
                           Text(
                             'RESET?: ${d.isReset ? "YES" : "NO"}${d.isReset ? " " + (resetLabel.isEmpty ? "-" : resetLabel) : ""}',
                           ),
@@ -201,7 +199,7 @@ class _Screen3State extends State<Screen3> {
                               child: TextField(
                                 controller: roadNameCtl,
                                 decoration: const InputDecoration(
-                                  labelText: 'Road Name',
+                                  labelText: 'RdName/Notes',
                                   border: OutlineInputBorder(),
                                 ),
                                 onChanged: (_) => setState(applyRoadEdits),
@@ -388,4 +386,7 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
     );
   }
 }
+
+
+
 
