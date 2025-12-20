@@ -38,6 +38,8 @@ class RowDraft {
   bool isReset;
   String? resetLabel;
 
+  bool isGas;
+  int? gasOdoHundredths;
   RowDraft({
     required this.odoHundredths,
     required this.surface,
@@ -50,6 +52,8 @@ class RowDraft {
     this.descr,
     this.isReset = false,
     this.resetLabel,
+    this.isGas = false,
+    this.gasOdoHundredths,
   });
 
   /// COPY CONSTRUCTOR (for edit workflows)
@@ -64,5 +68,7 @@ class RowDraft {
         roadNo = other.roadNo,
         descr = other.descr,
         isReset = other.isReset,
-        resetLabel = other.resetLabel;
+        resetLabel = other.resetLabel,
+        isGas = other.isGas,
+        gasOdoHundredths = other.gasOdoHundredths;
 }

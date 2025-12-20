@@ -162,7 +162,6 @@ class _Screen3State extends State<Screen3> {
                           Text(
                             'RESET?: ${d.isReset ? "YES" : "NO"}${d.isReset ? " " + (resetLabel.isEmpty ? "-" : resetLabel) : ""}',
                           ),
-                          Text("GAS?: ${d.isGas ? 'YES' : 'NO'}"),
                         ],
                       ),
                     ),
@@ -216,7 +215,7 @@ class _Screen3State extends State<Screen3> {
 
                         Row(
                           children: [
-                            const Text('Reset?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                            const Text('Reset', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                             const Spacer(),
                             Switch(
                               value: d.isReset,
@@ -236,25 +235,6 @@ class _Screen3State extends State<Screen3> {
                           ],
                         ),
 
-
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            const Text('Gas?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                            const Spacer(),
-                            Switch(
-                              value: d.isGas,
-                              onChanged: (v) {
-                                setState(() {
-                                  d.isGas = v;
-                                  if (v) {
-                                    d.gasOdoHundredths = d.odoHundredths;
-                                  }
-                                });
-                              },
-                            ),
-                          ],
-                        ),
                         if (d.isReset) ...[
                           const SizedBox(height: 8),
                           Row(
@@ -388,4 +368,5 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
     );
   }
 }
+
 
