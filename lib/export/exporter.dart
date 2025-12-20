@@ -21,6 +21,7 @@ class RollchartExporter {
   }
 
   static String buildCsv(List<RowDraft> rows) {
+    recomputeRollchartDerived(rows);
     final b = StringBuffer();
     b.writeln([
       'REC',
@@ -197,6 +198,7 @@ class RollchartExporter {
   }
 
   static Future<Uint8List> buildThermalPdfBytes(List<RowDraft> rows) async {
+    recomputeRollchartDerived(rows);
     final doc = pw.Document();
     final iconCache = <String, pw.MemoryImage>{};
 
@@ -334,11 +336,13 @@ final icon = await iconImage(r.iconKey);
   }
 
   static Future<void> exportCsvWeb(List<RowDraft> rows, {String filename = 'rollchart.csv'}) async {
+    recomputeRollchartDerived(rows);
     final csv = buildCsv(rows);
     downloadTextWeb(filename, 'text/csv;charset=utf-8', csv);
   }
 
   static Future<void> exportPdfWeb(List<RowDraft> rows, {String filename = 'rollchart_2.13in.pdf'}) async {
+    recomputeRollchartDerived(rows);
     final bytes = await buildThermalPdfBytes(rows);
     downloadBytesWeb(filename, 'application/pdf', bytes);
   }

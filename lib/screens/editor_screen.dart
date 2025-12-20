@@ -36,6 +36,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       rows.clear();
       if (loaded != null) {
         rows.addAll(loaded.rows);
+        recomputeRollchartDerived(rows);
         isComplete = loaded.isDone;
         carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       } else {
@@ -43,8 +44,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         carrySurface = SurfaceType.DT;
       }
       _loaded = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
 
   Future<void> _save() async {
@@ -143,6 +144,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     if (updated != null) {
       setState(() {
         rows[index] = updated;
+        recomputeRollchartDerived(rows);
         carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       });
       await _save();
@@ -174,6 +176,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     if (draft != null) {
       setState(() {
         rows.insert(index, draft);
+        recomputeRollchartDerived(rows);
       });
       await _save();
 }
@@ -206,6 +209,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     if (ok == true) {
       setState(() {
         rows.removeAt(index);
+        recomputeRollchartDerived(rows);
         carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       });
       await _save();

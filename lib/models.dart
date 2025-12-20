@@ -40,6 +40,11 @@ class RowDraft {
 
   bool isGas;
   int? gasOdoHundredths;
+
+  // Derived / computed (do not edit directly)
+  int? trueMileHundredths;     // absolute mile from rollchart start (hundredths)
+  int? remainingHundredths;    // total - true mile (hundredths)
+  int? nextGasHundredths;      // distance to NEXT gas (hundredths), strictly after current
   RowDraft({
     required this.odoHundredths,
     required this.surface,
@@ -70,5 +75,104 @@ class RowDraft {
         isReset = other.isReset,
         resetLabel = other.resetLabel,
         isGas = other.isGas,
-        gasOdoHundredths = other.gasOdoHundredths;
+        gasOdoHundredths = other.gasOdoHundredths,
+        trueMileHundredths = other.trueMileHundredths,
+        remainingHundredths = other.remainingHundredths,
+        nextGasHundredths = other.nextGasHundredths;
+}
+///////////////////////////////////////////////////////////////////////////////
+// ROLLCHART DERIVED METRICS
+//
+// This recomputes "true mile", "remaining miles", and "distance to NEXT gas"
+// based on segment-ODO + RESET boundaries.
+//
+// Definitions:
+// - Each row's odoHundredths is miles since last reset (segment odo).
+// - A RESET row closes a segment; its odoHundredths is the segment length.
+// - A GAS stop is always also a RESET (isGas => isReset).
+// - "Next gas" is strictly AFTER the current point (gasTrue > hereTrue).
+//
+// Call this AFTER any edit/insert/delete/reorder, and BEFORE any CSV/PDF export.
+///////////////////////////////////////////////////////////////////////////////
+
+class RollchartDerivedSummary {
+  final int totalHundredths;
+  final int? nextGasFromStartHundredths;
+
+  const RollchartDerivedSummary({
+    required this.totalHundredths,
+    required this.nextGasFromStartHundredths,
+  });
+}
+
+/// Recompute derived fields on rows.
+/// Requires RowDraft to have:
+/// - int odoHundredths
+/// - bool isReset
+/// - bool isGas
+///
+/// Optional: if RowDraft has nullable int? trueMileHundredths / remainingHundredths / nextGasHundredths,
+/// this will populate them. If those fields don't exist yet, you can still use the returned summary
+/// and/or compute via the helper arrays below.
+RollchartDerivedSummary recomputeRollchartDerived(List<RowDraft> rows) {
+  // 1) Enforce Gas => Reset (your rule).
+  for (final r in rows) {
+    if (r.isGas && !r.isReset) {
+      r.isReset = true;
+    }
+  }
+
+  // 2) Compute true miles (absolute miles from rollchart start).
+  final trueMiles = List<int>.filled(rows.length, 0);
+  int base = 0;
+  for (int i = 0; i < rows.length; i++) {
+    final r = rows[i];
+    final t = base + r.odoHundredths;
+    trueMiles[i] = t;
+
+    // If these optional fields exist, populate them (safe to ignore if you later add them).
+    try { r.trueMileHundredths = t; } catch (_) {}
+
+    if (r.isReset) {
+      base += r.odoHundredths;
+    }
+  }
+
+  final total = rows.isEmpty ? 0 : trueMiles[rows.length - 1];
+
+  // 3) Gather gas true-miles in order (gas occurs at the gas row's true mile).
+  final gasTrueMiles = <int>[];
+  for (int i = 0; i < rows.length; i++) {
+    if (rows[i].isGas) {
+      gasTrueMiles.add(trueMiles[i]);
+    }
+  }
+
+  // Helper: find first gasTrue > x (strictly next).
+  int? nextGasAfter(int x) {
+    for (final g in gasTrueMiles) {
+      if (g > x) return g;
+    }
+    return null;
+  }
+
+  // 4) Compute remaining + next-gas distance for each row (cacheable).
+  for (int i = 0; i < rows.length; i++) {
+    final here = trueMiles[i];
+    final remaining = total - here;
+    try { rows[i].remainingHundredths = remaining; } catch (_) {}
+
+    final nextGas = nextGasAfter(here);
+    final distToNextGas = (nextGas == null) ? null : (nextGas - here);
+    try { rows[i].nextGasHundredths = distToNextGas; } catch (_) {}
+  }
+
+  // 5) Start-of-rollchart "next gas" from mile 0.00.
+  final startNextGas = nextGasAfter(0);
+  final startDist = (startNextGas == null) ? null : (startNextGas - 0);
+
+  return RollchartDerivedSummary(
+    totalHundredths: total,
+    nextGasFromStartHundredths: startDist,
+  );
 }
