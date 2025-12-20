@@ -117,16 +117,83 @@ class RollchartExporter {
   }
 
   static String _rowInfoText(RowDraft r) {
-    final parts = <String>[];
-    final right = _rowRightText(r);
-    if (right.isNotEmpty) parts.add(right);
-    if ((r.descr ?? '').trim().isNotEmpty) parts.add(r.descr!.trim());
-    if (r.tags.trim().isNotEmpty) parts.add('[${r.tags.trim()}]');
+    final roadNo = (r.roadNo ?? '').trim();
+    final roadName = (r.roadName ?? '').trim();
+    final rightNote = (r.rightNote ?? '').trim();
+    final descr = (r.descr ?? '').trim();
+
+    // Tokenize tags, but normalize for logic (strip brackets).
+    final raw = r.tags.trim().replaceAll('][', '] [');
+    final rawTokens = raw.isEmpty ? <String>[] : raw.split(RegExp(r'\s+')).toList();
+
+    String norm(String t) {
+      var x = t.trim();
+      if (x.startsWith('[') && x.endsWith(']') && x.length >= 2) {
+        x = x.substring(1, x.length - 1).trim();
+      }
+      return x;
+    }
+
+    // Collect 'kept' tags exactly as they appeared (for _abbrTags),
+    // but filter out internal markers and checkbox glyphs.
+    final kept = <String>[];
+    String? roadType;
+
+    bool isMarkerToken(String n) {
+      final u = n.toUpperCase();
+      if (u == 'X' || u == 'XBOX' || u == 'X-BOX' || u == 'X_BOX') return true;
+      // common glyph markers that sometimes leak in as tokens
+      if (n == '?' || n == '?' || n == '?' || n == '•' || n == '·') return true;
+      return false;
+    }
+
+    for (final t in rawTokens) {
+      final n = norm(t);
+      if (n.isEmpty) continue;
+      if (isMarkerToken(n)) continue;
+
+      final u = n.toUpperCase();
+      if (roadType == null && (u == 'SM' || u == 'ORV' || u == 'FS' || u == 'RR')) {
+        roadType = u;
+        continue;
+      }
+
+      // Preserve token verbatim so _abbrTags can expand [DG]/[VDG]/etc.
+      kept.add(t.trim());
+    }
+
+    // If truly nothing meaningful exists (no road info, no notes, no descr, no real tags, not reset): print dash
+    if (!r.isReset &&
+        roadType == null &&
+        roadNo.isEmpty &&
+        roadName.isEmpty &&
+        rightNote.isEmpty &&
+        descr.isEmpty &&
+        kept.isEmpty) {
+      return '-';
+    }
+
+    final bits = <String>[];
+
+    final leadParts = <String>[];
+    if (roadType != null) leadParts.add(roadType!);
+    if (roadNo.isNotEmpty) leadParts.add(roadNo);
+    if (roadName.isNotEmpty) leadParts.add(roadName);
+    final lead = leadParts.join(' ');
+    if (lead.isNotEmpty) bits.add(lead);
+
+    if (rightNote.isNotEmpty) bits.add(rightNote);
+    if (descr.isNotEmpty) bits.add(descr);
+
+    final tagsOut = kept.join(' ').trim();
+    if (tagsOut.isNotEmpty) bits.add(tagsOut);
+
     if (r.isReset) {
       final label = (r.resetLabel ?? '').trim();
-      parts.add(label.isEmpty ? 'RESET' : 'RESET $label');
+      bits.add(label.isEmpty ? 'RESET' : 'RESET ');
     }
-    return parts.isEmpty ? '-' : parts.join(' • ');
+
+    return bits.isEmpty ? '-' : bits.join(' • ');
   }
 
   static Future<Uint8List> buildThermalPdfBytes(List<RowDraft> rows) async {
@@ -163,8 +230,12 @@ class RollchartExporter {
           .replaceAll('VDG', 'Very Dim Grassy')
           .replaceAll('DG', 'Dim grassy')
           .replaceAll('OBS', 'Obscure')
+          .replaceAll('?', '')
+          .replaceAll('?', '')
+          .replaceAll('?', '')
           .replaceAll('[', '')
-          .replaceAll(']', '');
+          .replaceAll(']', '')
+          .replaceAll(RegExp(r'\bXC(?:!!)?\b'), 'XC!!');
       // XC!! stays XC!!
     }
 
@@ -187,7 +258,18 @@ class RollchartExporter {
       final odo = formatHundredths(r.odoHundredths);
       final surf = surfaceText(r.surface);
       final info = _rowInfoText(r);
-      final icon = await iconImage(r.iconKey);
+      // Default to dash unless we detect any meaningful content for this row.
+      // This prevents stray UI marker glyphs from showing up when nothing is selected/entered.
+      final hasMeaningful =
+          (r.roadNo ?? '').trim().isNotEmpty ||
+          (r.roadName ?? '').trim().isNotEmpty ||
+          (r.rightNote ?? '').trim().isNotEmpty ||
+          (r.descr ?? '').trim().isNotEmpty ||
+          RegExp(r'\b(DG|VDG|OBS|XC!!|XC|SM|ORV|FS|RR)\b').hasMatch(info);
+      final infoOut = hasMeaningful ? info : '-';
+      
+      final infoClean = info.replaceAll(RegExp(r'[\u2610-\u2613\u2713-\u2719\u274C\u274E]'), '');
+final icon = await iconImage(r.iconKey);
 
       items.add(
         pw.Container(
@@ -221,7 +303,7 @@ class RollchartExporter {
                   children: [
                     pw.Text(surf, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                     pw.SizedBox(height: 2),
-                    pw.Text(_abbrTags(info), maxLines: 1, overflow: pw.TextOverflow.clip, style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(_abbrTags(infoOut), maxLines: 1, overflow: pw.TextOverflow.clip, style: const pw.TextStyle(fontSize: 8)),
                   ],
                 ),
               ),
@@ -263,6 +345,11 @@ class RollchartExporter {
 
   static bool get isWeb => kIsWeb;
 }
+
+
+
+
+
 
 
 
