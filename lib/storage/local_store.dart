@@ -38,6 +38,9 @@ class LocalStore {
         'descr': r.descr,
         'isReset': r.isReset,
         'resetLabel': r.resetLabel,
+      
+        'isGas': r.isGas,
+        'gasOdoHundredths': r.gasOdoHundredths,
       };
 
   static RowDraft _rowFromMap(Map<String, dynamic> m) => RowDraft(
@@ -51,6 +54,9 @@ class LocalStore {
         descr: m['descr'] as String?,
         isReset: (m['isReset'] ?? false) as bool,
         resetLabel: m['resetLabel'] as String?,
+      
+        isGas: (m['isGas'] ?? false) as bool,
+        gasOdoHundredths: m['gasOdoHundredths'] as int?,
       );
 
   static Future<void> _writeIndex(List<RollchartMeta> metas) async {
@@ -170,5 +176,6 @@ class LocalStore {
     return (isDone: isDone, rows: rows);
   }
 }
+
 
 

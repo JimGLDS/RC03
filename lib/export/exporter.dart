@@ -20,12 +20,60 @@ class RollchartExporter {
     return '"${s.replaceAll('"', '""')}"';
   }
 
-  static String buildCsv(List<RowDraft> rows) {
-    recomputeRollchartDerived(rows);
+    static String buildCsv(List<RowDraft> rows) {
+    // Compute mileage comps ONLY at CSV export time from current rows.
     final b = StringBuffer();
+
+    // TRUE_MILE: continuous across RESET, in hundredths
+    final trueHund = List<int>.filled(rows.length, 0);
+    var baseOffset = 0;
+    var prevTrue = 0;
+
+    for (var i = 0; i < rows.length; i++) {
+      final r = rows[i];
+      final odo = r.odoHundredths ?? 0;
+
+      if (i == 0) {
+        baseOffset = 0;
+            } else if (rows[i - 1].isReset) {
+        // New section starts AFTER the reset row.
+        // TRUE = prevTrue + ODO (ODO restarts near 0.00)
+        baseOffset = prevTrue;
+      }final t = odo + baseOffset;
+      trueHund[i] = t;
+      prevTrue = t;
+    }
+
+    final lastTrue = rows.isEmpty ? 0 : trueHund.last;
+
+    // REMAINING_MILES: to end
+    final remainingHund = List<int>.filled(rows.length, 0);
+    for (var i = 0; i < rows.length; i++) {
+      remainingHund[i] = lastTrue - trueHund[i];
+    }
+
+    // DIST_TO_NEXT_GAS: distance to next GAS row (blank if none)
+    final nextGasDistHund = List<int?>.filled(rows.length, null);
+    int? nextGasIndex;
+    for (var i = rows.length - 1; i >= 0; i--) {
+      if (nextGasIndex != null) {
+        nextGasDistHund[i] = trueHund[nextGasIndex] - trueHund[i];
+      } else {
+        nextGasDistHund[i] = null;
+      }
+      final r = rows[i];
+      if (r.isGas) nextGasIndex = i;
+    }
+
+    String fmtHundOrBlank(int? h) => (h == null) ? '' : formatHundredths(h);
+
+    // Header (GAS last)
     b.writeln([
       'REC',
       'ODO',
+      'TRUE_MILE',
+      'REMAINING_MILES',
+      'DIST_TO_NEXT_GAS',
       'SURFACE',
       'ICON',
       'TAGS',
@@ -35,26 +83,37 @@ class RollchartExporter {
       'DESCR',
       'IS_RESET',
       'RESET_NAME',
+      'GAS',
     ].join(','));
 
     for (var i = 0; i < rows.length; i++) {
       final r = rows[i];
+      final isGas = r.isGas;
+
       b.writeln([
         (i + 1).toString(),
-        formatHundredths(r.odoHundredths),
+        fmtHundOrBlank(r.odoHundredths),
+
+        fmtHundOrBlank(trueHund[i]),
+        fmtHundOrBlank(remainingHund[i]),
+        fmtHundOrBlank(nextGasDistHund[i]),
+
         surfaceText(r.surface),
         r.iconKey,
         _csvEscape(r.tags),
         _csvEscape((r.rightNote ?? '')),
-        _csvEscape((r.roadNo ?? '')),
+        (r.roadNo ?? ''),                // leave road numbers alone
         _csvEscape((r.roadName ?? '')),
         _csvEscape((r.descr ?? '')),
         r.isReset ? '1' : '0',
         _csvEscape((r.resetLabel ?? '')),
+        isGas ? 'Y' : 'N',               // GAS last
       ].join(','));
     }
+
     return b.toString();
   }
+
 
   static void downloadTextWeb(String filename, String mime, String text) {
     final bytes = utf8.encode(text);
@@ -349,6 +408,10 @@ final icon = await iconImage(r.iconKey);
 
   static bool get isWeb => kIsWeb;
 }
+
+
+
+
 
 
 
