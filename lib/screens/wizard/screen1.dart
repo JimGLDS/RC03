@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'screen2.dart';
 
@@ -238,6 +238,7 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
 
 
 

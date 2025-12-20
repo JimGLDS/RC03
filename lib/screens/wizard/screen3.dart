@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 
@@ -368,3 +368,4 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
     );
   }
 }
+
