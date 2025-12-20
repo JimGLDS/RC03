@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/upper_case_text_formatter.dart';
 import 'editor_screen.dart';
 
 class RollChartListScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _RollChartListScreenState extends State<RollChartListScreen> {
             context: context,
             builder: (_) => AlertDialog(
               title: const Text('Create roll chart'),
-              content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Name')),
+              content: TextField(inputFormatters: [UpperCaseTextFormatter()], controller: ctrl, decoration: const InputDecoration(labelText: 'Name')),
               actions: [
                 TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
                 FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Create')),

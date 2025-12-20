@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/upper_case_text_formatter.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 
@@ -186,7 +187,7 @@ class _Screen3State extends State<Screen3> {
                           children: [
                             SizedBox(
                               width: 110,
-                              child: TextField(
+                              child: TextField(inputFormatters: [UpperCaseTextFormatter()], 
                                 controller: roadNoCtl,
                                 decoration: const InputDecoration(
                                   labelText: 'Road No',
@@ -197,7 +198,7 @@ class _Screen3State extends State<Screen3> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: TextField(
+                              child: TextField(inputFormatters: [UpperCaseTextFormatter()], 
                                 controller: roadNameCtl,
                                 decoration: const InputDecoration(
                                   labelText: 'Road Name',
@@ -341,7 +342,7 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Reset Name'),
-      content: TextField(
+      content: TextField(inputFormatters: [UpperCaseTextFormatter()], 
         controller: ctl,
         autofocus: true,
         decoration: InputDecoration(
@@ -368,4 +369,5 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
     );
   }
 }
+
 

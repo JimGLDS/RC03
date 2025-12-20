@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import '../utils/upper_case_text_formatter.dart';
 import '../storage/local_store.dart';
 import 'editor_screen.dart';
 
@@ -35,7 +36,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(title),
-        content: TextField(
+        content: TextField(inputFormatters: [UpperCaseTextFormatter()], 
           controller: c,
           autofocus: true,
           decoration: const InputDecoration(labelText: 'Rollchart name'),
@@ -83,7 +84,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
   }
 
   Future<void> duplicateChart(RollchartMeta m) async {
-    final newName = await promptName('Duplicate as…', initial: '${m.name} copy');
+    final newName = await promptName('Duplicate as�', initial: '${m.name} copy');
     if (newName == null || newName.isEmpty) return;
     if (nameExists(newName)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('That name already exists.')));
@@ -164,3 +165,5 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     );
   }
 }
+
+

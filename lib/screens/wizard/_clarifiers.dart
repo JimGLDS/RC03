@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/upper_case_text_formatter.dart';
 import '../../models.dart';
 
 class ClarifierButtons extends StatefulWidget {
@@ -101,7 +102,7 @@ class _ClarifierButtonsState extends State<ClarifierButtons> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(title),
-        content: TextField(controller: ctrl, decoration: InputDecoration(hintText: hint), autofocus: true),
+        content: TextField(inputFormatters: [UpperCaseTextFormatter()], controller: ctrl, decoration: InputDecoration(hintText: hint), autofocus: true),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, null), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(context, ctrl.text), child: const Text('OK')),
