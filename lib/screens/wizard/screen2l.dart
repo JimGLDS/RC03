@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'screen2.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
@@ -24,13 +24,12 @@ class _Screen2LState extends State<Screen2L> {
   void initState() {
     super.initState();
     d = widget.draft;
-    if (!d.iconKey.startsWith('L')) d.iconKey = 'L01';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision â€” LEFT (2L)')),
+      appBar: AppBar(title: const Text('Decision — LEFT (2L)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -192,6 +191,7 @@ class _Screen2LState extends State<Screen2L> {
     );
   }
 }
+
 
 
 

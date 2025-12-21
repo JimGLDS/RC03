@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
 import 'screen2.dart';
+import 'screen2l.dart';
+import 'screen2r.dart';
 
 class Screen1 extends StatefulWidget {
   final int recNo;
@@ -185,25 +187,37 @@ class _Screen1State extends State<Screen1> {
               ? () async {
                   // start with existing draft if edit, otherwise new
                   final base = widget.initialDraft ??
-                      RowDraft(
-                        odoHundredths: odoHundredths,
-                        surface: surface,
-                        iconKey: 'T01',
-                      );
+    RowDraft(
+      odoHundredths: odoHundredths,
+      surface: surface,
+      iconKey: 'T01',
+    );
 
                   base.odoHundredths = odoHundredths;
                   base.surface = surface;
 
-                  final result = await Navigator.push<RowDraft>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => Screen2(
-                        recNo: widget.recNo,
-                        draft: base,
-                        existingResetNames: widget.existingResetNames,
-                      ),
-                    ),
-                  );
+                  final next = base.iconKey.startsWith('L')
+    ? Screen2L(
+        recNo: widget.recNo,
+        draft: base,
+        existingResetNames: widget.existingResetNames,
+      )
+    : base.iconKey.startsWith('R')
+        ? Screen2R(
+            recNo: widget.recNo,
+            draft: base,
+            existingResetNames: widget.existingResetNames,
+          )
+        : Screen2(
+            recNo: widget.recNo,
+            draft: base,
+            existingResetNames: widget.existingResetNames,
+          );
+
+final result = await Navigator.push<RowDraft>(
+  context,
+  MaterialPageRoute(builder: (_) => next),
+);
                   if (result != null && context.mounted) Navigator.pop(context, result);
                 }
               : null,
@@ -238,6 +252,7 @@ class _Screen1State extends State<Screen1> {
     );
   }
 }
+
 
 
 

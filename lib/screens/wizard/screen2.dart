@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 import '_clarifiers.dart';
@@ -24,13 +24,12 @@ class _Screen2State extends State<Screen2> {
   void initState() {
     super.initState();
     d = widget.draft;
-    if (!d.iconKey.startsWith('T')) d.iconKey = 'T01';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision â€” THRU (2T)')),
+      appBar: AppBar(title: const Text('Decision — THRU (2T)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -228,6 +227,8 @@ class _Screen2State extends State<Screen2> {
     );
   }
 }
+
+
 
 
 

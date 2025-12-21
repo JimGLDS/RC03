@@ -176,4 +176,3 @@ RollchartDerivedSummary recomputeRollchartDerived(List<RowDraft> rows) {
     nextGasFromStartHundredths: startDist,
   );
 }
-

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'screen2.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
@@ -24,13 +24,12 @@ class _Screen2RState extends State<Screen2R> {
   void initState() {
     super.initState();
     d = widget.draft;
-    if (!d.iconKey.startsWith('R')) d.iconKey = 'R01';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Decision â€” RIGHT (2R)')),
+      appBar: AppBar(title: const Text('Decision — RIGHT (2R)')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -192,6 +191,7 @@ class _Screen2RState extends State<Screen2R> {
     );
   }
 }
+
 
 
 
