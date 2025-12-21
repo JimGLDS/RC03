@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
-
+
+import '../icon_editor_screen.dart';
 class Screen3 extends StatefulWidget {
   final int recNo;
   final RowDraft draft;
@@ -135,11 +136,25 @@ class _Screen3State extends State<Screen3> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconSprite(
-                      assetPath: sheetForKey(d.iconKey),
-                      index0: indexForKey(d.iconKey),
-                      size: 72,
-                      padding: 2,
+                    InkWell(
+                      onTap: () async {
+                        final updatedKey = await Navigator.push<String>(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => IconEditorScreen(iconKey: d.iconKey),
+                          ),
+                        );
+                        if (!mounted) return;
+                        if (updatedKey != null && updatedKey != d.iconKey) {
+                          setState(() => d.iconKey = updatedKey);
+                        }
+                    },
+                      child: IconSprite(
+                        assetPath: sheetForKey(d.iconKey),
+                       index0: indexForKey(d.iconKey),
+                        size: 72,
+                        padding: 2,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(

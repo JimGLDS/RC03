@@ -1,0 +1,241 @@
+import 'package:flutter/material.dart';
+import '../widgets/icon_sprite.dart';
+
+
+class _Stroke {
+  final List<Offset> points;
+  final bool isEraser;
+  _Stroke(this.points, this.isEraser);
+}
+
+
+class IconEditorScreen extends StatefulWidget {
+  final String iconKey;
+
+  const IconEditorScreen({super.key, required this.iconKey});
+
+  @override
+  State<IconEditorScreen> createState() => _IconEditorScreenState();
+}
+
+class _IconEditorScreenState extends State<IconEditorScreen> {
+  bool? isEraser;
+
+  void _undoLast() {
+    setState(() {
+      if (_active != null && _active!.isNotEmpty) {
+        _active = null;
+        return;
+      }
+      if (_strokes.isNotEmpty) {
+        _strokes.removeLast();
+      }
+    });
+  }
+
+  final List<_Stroke> _strokes = [];
+  List<Offset>? _active;
+
+  void _clearAll() {
+    setState(() {
+      _strokes.clear();
+      _active = null;
+    }
+if (_strokes.isNotEmpty) {
+        _strokes.removeLast();
+      }
+    });
+  }
+);
+  }
+
+  void _startStroke(Offset p) {
+    setState(() {
+      _active = [p];
+    });
+  }
+
+  void _addPoint(Offset p) {
+    final pts = _active;
+    if (pts == null) return;
+    setState(() {
+      pts.add(p);
+    });
+  }
+
+  void _endStroke() {
+    final pts = _active;
+    if (pts == null || pts.length < 2) return;
+    setState(() {
+      _strokes.add(_Stroke(List<Offset>.from(pts), (isEraser == true)));
+      _active = null;
+    });
+  }
+
+  double _strokeWidth(double canvasSize) {
+    final v = canvasSize * 0.024;
+    return v.clamp(2.0, 8.0);
+  }
+
+
+  String sheetForKey(String iconKey) {
+    if (iconKey.startsWith('T')) return 'assets/icons/icons_t.png';
+    if (iconKey.startsWith('L')) return 'assets/icons/icons_l.png';
+    return 'assets/icons/icons_r.png';
+  }
+  int indexForKey(String iconKey) {
+    final trail = (iconKey.length >= 2) ? iconKey.substring(iconKey.length - 2) : '';
+    final num = int.tryParse(trail) ?? 1;
+    return (num - 1).clamp(0, 8);
+  }
+
+@override
+  Widget build(BuildContext context) {
+    final iconKey = widget.iconKey;
+
+    return Scaffold(
+      appBar: AppBar (
+        title: const Text('Edit Icon'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Undo',
+            icon: const Icon(Icons.undo),
+            onPressed: _undoLast,
+          ),
+          IconButton(
+            tooltip: 'Eraser',
+            icon: Icon((isEraser == true) ? Icons.auto_fix_off : Icons.auto_fix_off_outlined, color: (isEraser == true) ? Theme.of(context).colorScheme.primary : null),
+            onPressed: () => setState(() => isEraser = true),
+          ),
+          IconButton(
+            tooltip: 'Pencil',
+            icon: Icon((isEraser == false) ? Icons.edit : Icons.edit_outlined, color: (isEraser == false) ? Theme.of(context).colorScheme.primary : null),
+            onPressed: () => setState(() => isEraser = false),
+          ),
+          IconButton(
+            tooltip: 'Save',
+            icon: const Icon(Icons.save),
+            onPressed: () => Navigator.pop(context, iconKey),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final size = constraints.maxWidth;
+              return Column(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: ClipRect(
+                          child: Stack(
+                          children: [
+                            Positioned.fill(
+      child: IgnorePointer(
+        ignoring: true,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(width: 1),
+          ),
+        ),
+      ),
+    ),
+
+                  Positioned.fill(
+                              child: Center(
+                                child: IconSprite(
+                                  assetPath: sheetForKey(iconKey),
+                                  index0: indexForKey(iconKey),
+                                    size: size,
+                                    padding: 6,
+                                ),
+                            ),
+                            ),
+                            Positioned.fill(
+                              child: GestureDetector(
+                                onPanStart: (d) { if (isEraser == null) return; _startStroke(d.localPosition); },
+                              onPanUpdate: (d) { if (isEraser == null) return; _addPoint(d.localPosition); },
+                              onPanEnd: (_) { if (isEraser == null) return; _endStroke(); },
+                                child: CustomPaint(
+                                  painter: _StrokePainter(
+                                    strokes: _strokes,
+                                    active: _active,
+                                    strokeWidth: _strokeWidth(size),
+                                   ),
+                                  child: const SizedBox.expand(),
+                              ),
+                            ),
+                            ),
+                          ],
+                        ),
+                       ),
+                    )
+
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Base icon: $iconKey', style: const TextStyle(fontWeight: FontWeight.w700)),
+                ],
+              );
+
+          },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StrokePainter extends CustomPainter {
+  final List<_Stroke> strokes;
+  final List<Offset>? active;
+  final double strokeWidth;
+
+  _StrokePainter({
+    required this.strokes,
+    required this.active,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final s in strokes) {
+      _draw(canvas, s.points, s.isEraser);
+    }
+    final a = active;
+    if (a != null && a.length >= 2) {
+      _draw(canvas, a, false);
+    }
+  }
+
+  void _draw(Canvas canvas, List<Offset> pts, bool eraser) {
+    if (pts.length < 2) return;
+
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..strokeWidth = (eraser ? (strokeWidth * 1.8) : strokeWidth)
+      ..color = const Color(0xFF000000);
+
+    if (eraser) {
+      paint.blendMode = BlendMode.clear;
+    }
+
+    for (var i = 0; i < pts.length - 1; i++) {
+      canvas.drawLine(pts[i], pts[i + 1], paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _StrokePainter oldDelegate) => true;
+}
+
