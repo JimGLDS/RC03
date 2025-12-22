@@ -123,8 +123,37 @@ class RollchartExporter {
         isGas ? 'Y' : 'N',               // GAS last
       ].join(','));
     }
+    final totalMiles = rows.isEmpty ? 0.0 : (trueHund.last / 100.0);
 
-    return b.toString();
+    String surfKey(SurfaceType s) {
+      final t = surfaceText(s);
+      if (t == 'IT' || t == '1T') return '1T';
+      if (t == '2T' || t == 'DT' || t == 'GV' || t == 'PR') return t;
+      return t;
+    }
+
+    final milesBy = <String, double>{ '2T': 0.0, '1T': 0.0, 'PR': 0.0, 'GV': 0.0, 'DT': 0.0 };
+
+    for (var i = 0; i < rows.length; i++) {
+      final m = segHund[i] / 100.0;
+      final k = surfKey(rows[i].surface);
+      if (milesBy.containsKey(k)) {
+        milesBy[k] = (milesBy[k] ?? 0.0) + m;
+      }
+    }
+
+    int pct(double miles) {
+      if (totalMiles <= 0.0) return 0;
+      return ((miles / totalMiles) * 100.0).round();
+    }
+    b.writeln('');
+    b.writeln('SUMMARY');
+    b.writeln('TOTAL_MILES,${totalMiles.toStringAsFixed(2)}');
+    for (final k in ['2T', '1T', 'DT', 'GV', 'PR']) {
+      final m = milesBy[k] ?? 0.0;
+      b.writeln('${k}_MILES,${m.toStringAsFixed(2)},${pct(m)}%');
+    }
+return b.toString();
   }
 
 
@@ -575,6 +604,8 @@ final icon = await iconImage(r.iconKey);
 
   static bool get isWeb => kIsWeb;
 }
+
+
 
 
 
