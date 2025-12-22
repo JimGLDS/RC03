@@ -30,7 +30,7 @@ class LocalStore {
   static const String _customIconIndexKey = 'icons:custom:index:v1';
   static const String _customIconPngPrefix = 'icons:custom:png:';
 
-  static String _customPngKey(String iconKey) => '';
+  static String _customPngKey(String iconKey) => _customIconPngPrefix + iconKey.toUpperCase();
 
   static Future<List<String>> listCustomIconKeys() async {
     final sp = await SharedPreferences.getInstance();
@@ -53,7 +53,8 @@ class LocalStore {
       if (n > maxNum) maxNum = n;
     }
     final next = (maxNum + 1).clamp(1, 99);
-    return 'C';
+    final nn = next.toString().padLeft(2, '0');
+    return 'C' + nn;
   }
 
   static Future<void> saveCustomIconPng(String iconKey, Uint8List pngBytes) async {
@@ -258,6 +259,8 @@ static const String _indexKey = 'rollchart:index:v1';
     return (isDone: isDone, rows: rows);
   }
 }
+
+
 
 
 
