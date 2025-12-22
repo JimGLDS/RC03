@@ -286,7 +286,10 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
             tooltip: 'Export PDF (2.13")',
             icon: const Icon(Icons.picture_as_pdf),
             onPressed: isComplete ? null : () async {
-              await RollchartExporter.exportPdfWeb(rows, filename: 'rollchart_2.13in.pdf');
+              var safeName = widget.chartName.trim().replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '_');
+              safeName = safeName.replaceAll(RegExp(r'^_+|_+$'), '');
+              if (safeName.isEmpty) safeName = 'rollchart';
+              await RollchartExporter.exportPdfWeb(rows, filename: '${safeName}.pdf', chartName: widget.chartName);
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart_2.13in.pdf')));
               }
@@ -348,9 +351,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
                               ),
 
                               // Icon
-                              IconSprite(
-                                assetPath: sheetForKey(r.iconKey),
-                                index0: indexForKey(r.iconKey),
+                              IconGlyph(
+                                iconKey: r.iconKey,
                                 size: 52,
                                 padding: 1,
                               ),
