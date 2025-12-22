@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
+import '../storage/local_store.dart';
 import '../widgets/icon_sprite.dart';
 
 class _Stroke {
@@ -19,6 +23,8 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
   bool? isEraser;
   final List<_Stroke> _strokes = [];
   List<Offset>? _active;
+  final GlobalKey _captureKey = GlobalKey();
+
 
   void _undoLast() {
     setState(() {
@@ -80,7 +86,15 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
 
     if (!mounted) return;
     if (ok == true) {
-      Navigator.pop(context, iconKey);
+      final bytes = await _capturePngBytes();
+      if (bytes == null || bytes.isEmpty) return;
+
+      final upper = iconKey.toUpperCase();
+      final outKey = upper.startsWith('C') ? upper : await LocalStore.nextCustomIconKey();
+      await LocalStore.saveCustomIconPng(outKey, bytes);
+
+      if (!mounted) return;
+      Navigator.pop(context, outKey);
     }
   }
   void _startStroke(Offset p) {
@@ -119,6 +133,45 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
     final num = int.tryParse(trail) ?? 1;
     return (num - 1).clamp(0, 8);
   }
+  Widget _baseIconWidget(String iconKey, double size) {
+    final k = iconKey.toUpperCase();
+    if (k.startsWith('C')) {
+      return FutureBuilder<Uint8List?>(
+        future: LocalStore.loadCustomIconPng(k),
+        builder: (context, snap) {
+          final bytes = snap.data;
+          if (bytes != null && bytes.isNotEmpty) {
+            return Image.memory(bytes, fit: BoxFit.contain, filterQuality: FilterQuality.high);
+          }
+          return IconSprite(
+            assetPath: sheetForKey(iconKey),
+            index0: indexForKey(iconKey),
+            size: size,
+            padding: 6,
+          );
+        },
+      );
+    }
+    return IconSprite(
+      assetPath: sheetForKey(iconKey),
+      index0: indexForKey(iconKey),
+      size: size,
+      padding: 6,
+    );
+  }
+
+  Future<Uint8List?> _capturePngBytes() async {
+    final ctx = _captureKey.currentContext;
+    if (ctx == null) return null;
+    final ro = ctx.findRenderObject();
+    if (ro is! RenderRepaintBoundary) return null;
+
+    final img = await ro.toImage(pixelRatio: 1.0);
+    final bd = await img.toByteData(format: ui.ImageByteFormat.png);
+    if (bd == null) return null;
+    return bd.buffer.asUint8List();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +200,7 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
                       child: AspectRatio(
                         aspectRatio: 1,
                       child: ClipRect(
-                        child: Stack(
+                        child: RepaintBoundary(key: _captureKey, child: Stack(
                           children: [
                               Positioned.fill(
                               child: IgnorePointer(
@@ -161,40 +214,36 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
                             ),
                             Positioned.fill(
                               child: Center(
-                                child: IconSprite(
-                                  assetPath: sheetForKey(iconKey),
-                                  index0: indexForKey(iconKey),
-                                    size: size,
-                                    padding: 6,
-                                  ),
+                                child: _baseIconWidget(iconKey, size),
                               ),
-                           ),
+                            ),
                             Positioned.fill(
                               child: GestureDetector(
                                 onPanStart: (d) {
-                                    if (isEraser == null) return;
-                                    _startStroke(d.localPosition);
+                                  if (isEraser == null) return;
+                                  _startStroke(d.localPosition);
                                 },
                                 onPanUpdate: (d) {
-                                    if (isEraser == null) return;
-                                    _addPoint(d.localPosition);
+                                  if (isEraser == null) return;
+                                  _addPoint(d.localPosition);
                                 },
                                 onPanEnd: (_) {
-                                    if (isEraser == null) return;
-                                    _endStroke();
+                                  if (isEraser == null) return;
+                                  _endStroke();
                                 },
                                 child: CustomPaint(
-                                painter: _StrokePainter(
-                                  strokes: _strokes,
+                                  painter: _StrokePainter(
+                                    strokes: _strokes,
                                     active: _active,
                                     strokeWidth: _strokeWidth(size),
                                     activeIsEraser: isEraser == true,
                                   ),
-                                child: const SizedBox.expand(),
+                                  child: const SizedBox.expand(),
+                                ),
                               ),
-                           ),
-                          ),
+                            ),
                           ],
+                        ),
                         ),
                        ),
                     ),
