@@ -281,8 +281,10 @@ class RollchartExporter {
     const rowH = 54.0;
     const headerH = 18.0;
     const footerH = 14.0;
+    const coverH = 420.0;
+    const endH = 220.0;
 
-    final heightPts = margin * 2 + headerH + footerH + rows.length * rowH;
+    final heightPts = margin * 2 + coverH + headerH + footerH + rows.length * rowH + endH;
     
 
     String _abbrTags(String s) {
@@ -309,6 +311,99 @@ class RollchartExporter {
 
     final items = <pw.Widget>[];
 
+    double _totalMiles() {
+      if (rows.isEmpty) return 0.0;
+      final first = rows.first.odoHundredths;
+      final last = rows.last.odoHundredths;
+      final delta = (last - first).clamp(0, 99999999);
+      return delta / 100.0;
+    }
+
+    final totalMiles = _totalMiles();
+
+    double _segMiles(int a, int b) {
+      final d = b - a;
+      if (d <= 0) return 0.0;
+      return d / 100.0;
+    }
+
+    String _abbrSurf(SurfaceType s) {
+      final t = surfaceText(s);
+      if (t == '2T') return '2T';
+      if (t == 'DT') return 'DT';
+      if (t == 'GV') return 'GV';
+      if (t == 'IT') return 'IT';
+      if (t == 'PR') return 'PR';
+      return t;
+    }
+
+    final milesBy = <String, double>{ '2T': 0.0, 'PR': 0.0, 'GV': 0.0, 'DT': 0.0, 'IT': 0.0 };
+
+    for (var i = 0; i < rows.length - 1; i++) {
+      final here = rows[i];
+      final next = rows[i + 1];
+      final m = _segMiles(here.odoHundredths, next.odoHundredths);
+      final k = _abbrSurf(here.surface);
+      milesBy[k] = (milesBy[k] ?? 0.0) + m;
+    }
+
+    int _pct(double miles) {
+      if (totalMiles <= 0.0) return 0;
+      return ((miles / totalMiles) * 100.0).round();
+    }
+
+    items.add(
+      pw.Container(
+        height: coverH,
+        padding: const pw.EdgeInsets.only(top: 6),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('ROLLCHART NAME', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text(' Miles', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 14),
+            pw.Text('Please Ride Safe & Courteous!', style: const pw.TextStyle(fontSize: 10)),
+            pw.Text('Slow & Quiet Near Residences!', style: const pw.TextStyle(fontSize: 10)),
+            pw.Text('Slow near other people!', style: const pw.TextStyle(fontSize: 10)),
+            pw.SizedBox(height: 14),
+            pw.Text('Warning!', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 6),
+            pw.Text(
+              'Use of this guide is at your own risk. There are hazards and other items not listed and they will be encountered by you.\\n\\n'
+              'This course includes public roads, highways and trails - conditions of these are beyond the control of those that developed this guide. You are responsible for your actions and your compliance with any applicable laws.\\n\\n'
+              'By using this guide, you agree to not hold the developers liable for any type of misfortune you experience. If you do not agree, dispose of this guide immediately!',
+              style: const pw.TextStyle(fontSize: 7),
+            ),
+            pw.SizedBox(height: 10),
+            pw.Text('_______________________', style: const pw.TextStyle(fontSize: 8)),
+            pw.SizedBox(height: 10),
+            pw.Text('Legend -', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 6),
+            pw.Text(
+              '!...................... Caution/Danger!\\n'
+              '!!..................... Danger/Severe!\\n'
+              '!!!.................... Danger/Extreme!\\n'
+              'X TC !! ........... Trail Crossing\\n'
+              'X.....................Crossing\\n'
+              'IT.................... Single Track Trail\\n'
+              '2T................... Two Track\\n'
+              'DT.................. Dirt Road\\n'
+              'GV.................. Gravel Road\\n'
+              'MCCCT.......... MI Cross Country Cycle\\n'
+              'Trail  ORV TR..........ORV Trail\\n'
+              'ORV RT..........ORV Route\\n'
+              'PL...................Power Line\\n'
+              'PPL................ Pipe Line',
+              style: const pw.TextStyle(fontSize: 7),
+            ),
+            pw.SizedBox(height: 10),
+            pw.Text('Note -', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+            pw.Text('On any intersection pictograph, always enter from the bottom vertical line', style: const pw.TextStyle(fontSize: 7)),
+          ],
+        ),
+      ),
+    );
     items.add(
       pw.Container(
         height: headerH,
@@ -350,10 +445,10 @@ final icon = await iconImage(r.iconKey);
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
               pw.SizedBox(
-                width: 48,
+                width: 58,
                 child: pw.Row(
                   children: [
-                    pw.SizedBox(width: 10, child: pw.Text(rec, style: const pw.TextStyle(fontSize: 7))),
+                    pw.SizedBox(width: 16, child: pw.Text(rec, style: const pw.TextStyle(fontSize: 7))),
                     pw.SizedBox(width: 6),
                     pw.Expanded(
                       child: pw.Text(odo, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
@@ -362,7 +457,7 @@ final icon = await iconImage(r.iconKey);
                 ),
               ),
               pw.SizedBox(width: 4),
-              pw.Container(width: 26, height: 26, child: pw.Image(icon, fit: pw.BoxFit.contain)),
+              pw.Container(width: 39, height: 39, child: pw.Image(icon, fit: pw.BoxFit.contain)),
               pw.SizedBox(width: 6),
               pw.Expanded(
                 child: pw.Column(
@@ -371,7 +466,7 @@ final icon = await iconImage(r.iconKey);
                   children: [
                     pw.Text(surf, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
                     pw.SizedBox(height: 2),
-                    pw.Text(_abbrTags(infoOut), maxLines: 1, overflow: pw.TextOverflow.clip, style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text(_abbrTags(infoOut), style: const pw.TextStyle(fontSize: 8)),
                   ],
                 ),
               ),
@@ -380,6 +475,29 @@ final icon = await iconImage(r.iconKey);
         ),
       );
     }
+    items.add(
+      pw.Container(
+        height: endH,
+        padding: const pw.EdgeInsets.only(top: 10),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('End of Course – well done!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Text('ROLLCHART NAME', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 6),
+            pw.Text(' Miles', style: const pw.TextStyle(fontSize: 10)),
+            pw.SizedBox(height: 10),
+            pw.Text('2T =  miles = %', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('PR =  miles = %    GV =  miles = %', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('DT =  miles = %', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('IT =  miles = %', style: const pw.TextStyle(fontSize: 8)),
+            pw.SizedBox(height: 16),
+            pw.Text('          Cut Here', style: const pw.TextStyle(fontSize: 8)),
+          ],
+        ),
+      ),
+    );
 
     items.add(
       pw.Container(
