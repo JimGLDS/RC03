@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
 
@@ -23,7 +24,88 @@ class RollchartMeta {
 }
 
 class LocalStore {
-  static const String _indexKey = 'rollchart:index:v1';
+
+  // ---------- CUSTOM ICON STORAGE ----------
+  // Stores flattened custom icons (PNG bytes) in SharedPreferences as base64.
+  static const String _customIconIndexKey = 'icons:custom:index:v1';
+  static const String _customIconPngPrefix = 'icons:custom:png:';
+
+  static String _customPngKey(String iconKey) => '';
+
+  static Future<List<String>> listCustomIconKeys() async {
+    final sp = await SharedPreferences.getInstance();
+    final list = sp.getStringList(_customIconIndexKey) ?? <String>[];
+    final out = <String>[];
+    for (final k in list) {
+      final kk = k.toUpperCase();
+      if (kk.startsWith('C')) out.add(kk);
+    }
+    out.sort();
+    return out;
+  }
+
+  static Future<String> nextCustomIconKey() async {
+    final keys = await listCustomIconKeys();
+    var maxNum = 0;
+    for (final kk in keys) {
+      final tail = (kk.length >= 3) ? kk.substring(1) : '';
+      final n = int.tryParse(tail) ?? 0;
+      if (n > maxNum) maxNum = n;
+    }
+    final next = (maxNum + 1).clamp(1, 99);
+    return 'C';
+  }
+
+  static Future<void> saveCustomIconPng(String iconKey, Uint8List pngBytes) async {
+    final sp = await SharedPreferences.getInstance();
+    final k = iconKey.toUpperCase();
+    final b64 = base64Encode(pngBytes);
+    await sp.setString(_customPngKey(k), b64);
+
+    final list = (sp.getStringList(_customIconIndexKey) ?? <String>[])
+        .map((e) => e.toUpperCase())
+        .toList();
+
+    if (!list.contains(k)) list.add(k);
+    list.sort();
+    await sp.setStringList(_customIconIndexKey, list);
+  }
+
+  static Future<Uint8List?> loadCustomIconPng(String iconKey) async {
+    final sp = await SharedPreferences.getInstance();
+    final k = iconKey.toUpperCase();
+    final b64 = sp.getString(_customPngKey(k));
+    if (b64 == null || b64.isEmpty) return null;
+    try {
+      final bytes = base64Decode(b64);
+      return Uint8List.fromList(bytes);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> deleteCustomIcon(String iconKey) async {
+    final sp = await SharedPreferences.getInstance();
+    final k = iconKey.toUpperCase();
+    await sp.remove(_customPngKey(k));
+
+    final list = (sp.getStringList(_customIconIndexKey) ?? <String>[])
+        .map((e) => e.toUpperCase())
+        .where((e) => e != k)
+        .toList();
+    list.sort();
+    await sp.setStringList(_customIconIndexKey, list);
+  }
+
+  static Future<void> clearAllCustomIcons() async {
+    final sp = await SharedPreferences.getInstance();
+    final keys = await listCustomIconKeys();
+    for (final k in keys) {
+      await sp.remove(_customPngKey(k));
+    }
+    await sp.remove(_customIconIndexKey);
+  }
+static const String _indexKey = 'rollchart:index:v1';
 
   static String _key(String chartName) => 'rollchart:${chartName.toLowerCase()}';
 
