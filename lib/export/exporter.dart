@@ -432,7 +432,7 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
           children: [
             pw.Text(chartName, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
-            pw.Text(' Miles', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.Text(totalMiles.toStringAsFixed(2) + ' Miles', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 14),
             pw.Text('Please Ride Safe & Courteous!', style: const pw.TextStyle(fontSize: 10)),
             pw.Text('Slow & Quiet Near Residences!', style: const pw.TextStyle(fontSize: 10)),
@@ -557,12 +557,12 @@ final icon = await iconImage(r.iconKey);
             pw.SizedBox(height: 10),
             pw.Text(chartName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 6),
-            pw.Text(' Miles', style: const pw.TextStyle(fontSize: 10)),
+            pw.Text(totalMiles.toStringAsFixed(2) + ' Miles', style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 10),
-            pw.Text('2T =  miles = %', style: const pw.TextStyle(fontSize: 8)),
-            pw.Text('PR =  miles = %    GV =  miles = %', style: const pw.TextStyle(fontSize: 8)),
-            pw.Text('DT =  miles = %', style: const pw.TextStyle(fontSize: 8)),
-            pw.Text('IT =  miles = %', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('2T = ' + (milesBy['2T'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['2T'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('PR = ' + (milesBy['PR'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['PR'] ?? 0.0).toString() + '%    GV = ' + (milesBy['GV'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['GV'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('DT = ' + (milesBy['DT'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['DT'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
+            pw.Text('1T = ' + (milesBy['1T'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['1T'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
             pw.SizedBox(height: 16),
             pw.Text('          Cut Here', style: const pw.TextStyle(fontSize: 8)),
           ],
@@ -604,6 +604,7 @@ final icon = await iconImage(r.iconKey);
 
   static bool get isWeb => kIsWeb;
 }
+
 
 
 
