@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../storage/local_store.dart';
 import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -145,6 +146,11 @@ class RollchartExporter {
   }
 
   static Future<Uint8List> _iconPngBytes(String iconKey) async {
+    final k = iconKey.toUpperCase();
+    if (k.startsWith('C')) {
+      final bytes = await LocalStore.loadCustomIconPng(k);
+      if (bytes != null && bytes.isNotEmpty) return bytes;
+    }
     final sheetPath = _sheetForKey(iconKey);
     final idx = _indexForKey(iconKey);
 
@@ -262,10 +268,11 @@ class RollchartExporter {
     final iconCache = <String, pw.MemoryImage>{};
 
     Future<pw.MemoryImage> iconImage(String iconKey) async {
-      if (iconCache.containsKey(iconKey)) return iconCache[iconKey]!;
-      final pngBytes = await _iconPngBytes(iconKey);
+      final cacheKey = iconKey.toUpperCase();
+      if (iconCache.containsKey(cacheKey)) return iconCache[cacheKey]!;
+      final pngBytes = await _iconPngBytes(cacheKey);
       final mem = pw.MemoryImage(pngBytes);
-      iconCache[iconKey] = mem;
+      iconCache[cacheKey] = mem;
       return mem;
     }
 

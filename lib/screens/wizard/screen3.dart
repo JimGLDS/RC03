@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
-
+
+
 import '../icon_editor_screen.dart';
 class Screen3 extends StatefulWidget {
   final int recNo;
@@ -149,9 +150,8 @@ class _Screen3State extends State<Screen3> {
                           setState(() => d.iconKey = updatedKey);
                         }
                     },
-                      child: IconSprite(
-                        assetPath: sheetForKey(d.iconKey),
-                       index0: indexForKey(d.iconKey),
+                      child: IconGlyph(
+                        iconKey: d.iconKey,
                         size: 72,
                         padding: 2,
                       ),
