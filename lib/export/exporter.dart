@@ -47,6 +47,21 @@ class RollchartExporter {
 
     final lastTrue = rows.isEmpty ? 0 : trueHund.last;
 
+
+    // SEG_MILES: segment length per row (in hundredths)
+    // Rule: row1 segment = its ODO (no previous row).
+    // For all others: segment = TRUE[i] - TRUE[i-1].
+    // RESET rows contribute 0 segment miles (the restart segment is on the row AFTER RESET).
+    final segHund = List<int>.filled(rows.length, 0);
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].isReset) {
+        segHund[i] = 0;
+      } else if (i == 0) {
+        segHund[i] = trueHund[i];
+      } else {
+        segHund[i] = trueHund[i] - trueHund[i - 1];
+      }
+    }
     // REMAINING_MILES: to end
     final remainingHund = List<int>.filled(rows.length, 0);
     for (var i = 0; i < rows.length; i++) {
@@ -72,6 +87,7 @@ class RollchartExporter {
     b.writeln([
       'REC',
       'ODO',
+      'SEG_MILES',
       'TRUE_MILE',
       'REMAINING_MILES',
       'DIST_TO_NEXT_GAS',
@@ -95,6 +111,7 @@ class RollchartExporter {
         (i + 1).toString(),
         fmtHundOrBlank(r.odoHundredths),
 
+        fmtHundOrBlank(segHund[i]),
         fmtHundOrBlank(trueHund[i]),
         fmtHundOrBlank(remainingHund[i]),
         fmtHundOrBlank(nextGasDistHund[i]),
@@ -262,7 +279,7 @@ class RollchartExporter {
     return bits.isEmpty ? '-' : bits.join(' • ');
   }
 
-  static Future<Uint8List> buildThermalPdfBytes(List<RowDraft> rows) async {
+  static Future<Uint8List> buildThermalPdfBytes(List<RowDraft> rows, {required String chartName}) async {
     recomputeRollchartDerived(rows);
     final doc = pw.Document();
     final iconCache = <String, pw.MemoryImage>{};
@@ -311,6 +328,40 @@ class RollchartExporter {
 
     final items = <pw.Widget>[];
 
+
+    // TRUE_MILE (PDF): continuous across RESET, in hundredths
+    final trueHundPdf = List<int>.filled(rows.length, 0);
+    var baseOffsetPdf = 0;
+    var prevTruePdf = 0;
+
+    for (var i = 0; i < rows.length; i++) {
+      final r = rows[i];
+      final odo = r.odoHundredths ?? 0;
+
+      if (i == 0) {
+        baseOffsetPdf = 0;
+      } else if (rows[i - 1].isReset) {
+        baseOffsetPdf = prevTruePdf;
+      }
+
+      final t = odo + baseOffsetPdf;
+      trueHundPdf[i] = t;
+      prevTruePdf = t;
+    }
+
+    // SEG_MILES (PDF): per-row segment (hundredths)
+    final segHundPdf = List<int>.filled(rows.length, 0);
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].isReset) {
+        segHundPdf[i] = 0;
+      } else if (i == 0) {
+        segHundPdf[i] = trueHundPdf[i];
+      } else {
+        segHundPdf[i] = trueHundPdf[i] - trueHundPdf[i - 1];
+      }
+    }
+
+    final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
     double _totalMiles() {
       if (rows.isEmpty) return 0.0;
       final first = rows.first.odoHundredths;
@@ -337,13 +388,12 @@ class RollchartExporter {
       return t;
     }
 
-    final milesBy = <String, double>{ '2T': 0.0, 'PR': 0.0, 'GV': 0.0, 'DT': 0.0, 'IT': 0.0 };
+    final milesBy = <String, double>{ '2T': 0.0, 'PR': 0.0, 'GV': 0.0, 'DT': 0.0, '1T': 0.0 };
 
-    for (var i = 0; i < rows.length - 1; i++) {
-      final here = rows[i];
-      final next = rows[i + 1];
-      final m = _segMiles(here.odoHundredths, next.odoHundredths);
-      final k = _abbrSurf(here.surface);
+        for (var i = 0; i < rows.length; i++) {
+      if (rows[i].isReset) continue;
+      final m = segHundPdf[i] / 100.0;
+      final k = _abbrSurf(rows[i].surface);
       milesBy[k] = (milesBy[k] ?? 0.0) + m;
     }
 
@@ -359,7 +409,7 @@ class RollchartExporter {
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('ROLLCHART NAME', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+            pw.Text(chartName, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Text(' Miles', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 14),
@@ -484,7 +534,7 @@ final icon = await iconImage(r.iconKey);
           children: [
             pw.Text('End of Course – well done!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
-            pw.Text('ROLLCHART NAME', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.Text(chartName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 6),
             pw.Text(' Miles', style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 10),
@@ -525,14 +575,19 @@ final icon = await iconImage(r.iconKey);
     downloadTextWeb(filename, 'text/csv;charset=utf-8', csv);
   }
 
-  static Future<void> exportPdfWeb(List<RowDraft> rows, {String filename = 'rollchart_2.13in.pdf'}) async {
+  static Future<void> exportPdfWeb(List<RowDraft> rows, {String filename = 'rollchart_2.13in.pdf', required String chartName}) async {
     recomputeRollchartDerived(rows);
-    final bytes = await buildThermalPdfBytes(rows);
+    final bytes = await buildThermalPdfBytes(rows, chartName: chartName);
     downloadBytesWeb(filename, 'application/pdf', bytes);
   }
 
   static bool get isWeb => kIsWeb;
 }
+
+
+
+
+
 
 
 
