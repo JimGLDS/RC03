@@ -45,24 +45,19 @@ class RollchartExporter {
       prevTrue = t;
     }
 
-    final lastTrue = rows.isEmpty ? 0 : trueHund.last;
-
-
-    // SEG_MILES: segment length per row (in hundredths)
+    final lastTrue = rows.isEmpty ? 0 : trueHund.last;    // SEG_MILES: segment length per row (in hundredths)
     // Rule: row1 segment = its ODO (no previous row).
-    // For all others: segment = TRUE[i] - TRUE[i-1].
-    // RESET rows contribute 0 segment miles (the restart segment is on the row AFTER RESET).
+    // For all others (including RESET rows): segment = TRUE[i] - TRUE[i-1].
     final segHund = List<int>.filled(rows.length, 0);
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].isReset) {
-        segHund[i] = 0;
-      } else if (i == 0) {
+      if (i == 0) {
         segHund[i] = trueHund[i];
       } else {
         segHund[i] = trueHund[i] - trueHund[i - 1];
       }
     }
-    // REMAINING_MILES: to end
+
+// REMAINING_MILES: to end
     final remainingHund = List<int>.filled(rows.length, 0);
     for (var i = 0; i < rows.length; i++) {
       remainingHund[i] = lastTrue - trueHund[i];
@@ -347,21 +342,19 @@ class RollchartExporter {
       final t = odo + baseOffsetPdf;
       trueHundPdf[i] = t;
       prevTruePdf = t;
-    }
-
-    // SEG_MILES (PDF): per-row segment (hundredths)
+    }    // SEG_MILES (PDF): per-row segment (hundredths)
+    // Rule: row1 segment = its ODO (no previous row).
+    // For all others (including RESET rows): segment = TRUE[i] - TRUE[i-1].
     final segHundPdf = List<int>.filled(rows.length, 0);
     for (var i = 0; i < rows.length; i++) {
-      if (rows[i].isReset) {
-        segHundPdf[i] = 0;
-      } else if (i == 0) {
+      if (i == 0) {
         segHundPdf[i] = trueHundPdf[i];
       } else {
         segHundPdf[i] = trueHundPdf[i] - trueHundPdf[i - 1];
       }
     }
 
-    final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
+final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
     double _totalMiles() {
       if (rows.isEmpty) return 0.0;
       final first = rows.first.odoHundredths;
@@ -370,7 +363,6 @@ class RollchartExporter {
       return delta / 100.0;
     }
 
-    final totalMiles = _totalMiles();
 
     double _segMiles(int a, int b) {
       final d = b - a;
@@ -583,6 +575,10 @@ final icon = await iconImage(r.iconKey);
 
   static bool get isWeb => kIsWeb;
 }
+
+
+
+
 
 
 
