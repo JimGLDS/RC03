@@ -383,6 +383,45 @@ return b.toString();
       }
     }
 
+
+final nextGasDistHundPdf = List<int?>.filled(rows.length, null);
+int? nextGasIndexPdf;
+for (var i = rows.length - 1; i >= 0; i--) {
+  if (nextGasIndexPdf != null) {
+    nextGasDistHundPdf[i] = trueHundPdf[nextGasIndexPdf] - trueHundPdf[i];
+  } else {
+    nextGasDistHundPdf[i] = null;
+  }
+  if (rows[i].isGas) nextGasIndexPdf = i;
+}
+
+int? firstGasIndexPdf;
+for (var i = 0; i < rows.length; i++) {
+  if (rows[i].isGas) { firstGasIndexPdf = i; break; }
+}
+
+final warnNextReset = List<int>.filled(rows.length, 0);
+bool _hasXc(RowDraft rr) {
+  final s = _rowInfoText(rr);
+  return RegExp(r'\bXC(?:!!)?\b').hasMatch(s);
+}
+for (var i = 0; i < rows.length; i++) {
+  if (!(rows[i].isReset || rows[i].isGas)) continue;
+  var j = i + 1;
+  while (j < rows.length && !(rows[j].isReset || rows[j].isGas)) { j++; }
+  var n = 0;
+  for (var k = i + 1; k < j; k++) {
+    if (_hasXc(rows[k])) n++;
+  }
+  warnNextReset[i] = n;
+}
+
+String _fmtMiles1(int? hund) {
+  if (hund == null) return '';
+  return (hund / 100.0).toStringAsFixed(1);
+}
+String _fmtMiles2(double miles) => miles.toStringAsFixed(2);
+
 final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
     double _totalMiles() {
       if (rows.isEmpty) return 0.0;
@@ -547,14 +586,82 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
       ),
     );
 
+    if (firstGasIndexPdf != null) {
+      final d = trueHundPdf[firstGasIndexPdf!];
+      items.add(
+        pw.Container(
+          height: 16,
+          alignment: pw.Alignment.center,
+          child: pw.Text(_fmtMiles1(d) + ' miles to next gas', style: const pw.TextStyle(fontSize: 7)),
+        ),
+      );
+      items.add(
+        pw.Container(
+          height: 2,
+          decoration: const pw.BoxDecoration(
+            border: pw.Border(bottom: pw.BorderSide(width: 0.8)),
+          ),
+        ),
+      );
+    }
+
+
     for (var i = 0; i < rows.length; i++) {
       final r = rows[i];
+      final isResetEffective = r.isReset || r.isGas;
+
+      if (isResetEffective) {
+        final milesSoFar = (trueHundPdf[i] / 100.0);
+        final milesToGo = (totalMiles - milesSoFar).clamp(0.0, 99999999.0);
+        final gasDist = nextGasDistHundPdf[i];
+        final isLastGas = r.isGas && gasDist == null;
+
+        items.add(
+          pw.Container(
+            height: rowH,
+            padding: const pw.EdgeInsets.symmetric(vertical: 4),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(bottom: pw.BorderSide(width: 0.5)),
+            ),
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                if (r.isGas)
+                  pw.Text(
+                    isLastGas ? 'This is Last Gas' : (_fmtMiles1(gasDist) + ' miles to next gas'),
+                    style: pw.TextStyle(fontSize: 7, fontStyle: pw.FontStyle.italic),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                if (r.isGas) pw.SizedBox(height: 2),
+                pw.Text(
+                  (((r.resetLabel ?? '').trim().isEmpty) ? 'Reset' : ('Reset ' + (r.resetLabel ?? '').trim())),
+                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'Warnings during next reset: ' + warnNextReset[i].toString(),
+                  style: const pw.TextStyle(fontSize: 7),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  _fmtMiles2(milesSoFar) + ' miles, ' + _fmtMiles2(milesToGo) + ' to go.',
+                  style: const pw.TextStyle(fontSize: 7),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+        continue;
+      }
+
       final rec = (i + 1).toString();
       final odo = formatHundredths(r.odoHundredths);
       final surf = surfaceText(r.surface);
       final info = _rowInfoText(r);
-      // Default to dash unless we detect any meaningful content for this row.
-      // This prevents stray UI marker glyphs from showing up when nothing is selected/entered.
+
       final hasMeaningful =
           (r.roadNo ?? '').trim().isNotEmpty ||
           (r.roadName ?? '').trim().isNotEmpty ||
@@ -562,9 +669,8 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
           (r.descr ?? '').trim().isNotEmpty ||
           RegExp(r'\b(DG|VDG|OBS|XC!!|XC|SM|ORV|FS|RR)\b').hasMatch(info);
       final infoOut = hasMeaningful ? info : '-';
-      
-      final infoClean = info.replaceAll(RegExp(r'[\u2610-\u2613\u2713-\u2719\u274C\u274E]'), '');
-final icon = await iconImage(r.iconKey);
+
+      final icon = await iconImage(r.iconKey);
 
       items.add(
         pw.Container(
