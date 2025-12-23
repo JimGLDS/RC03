@@ -320,9 +320,9 @@ return b.toString();
     const widthPts = 2.13 * 72.0; // 153.36 points
     const margin = 6.0;
     const rowH = 54.0;
-    const headerH = 18.0;
+    const headerH = 34.0;
     const footerH = 14.0;
-    const coverH = 420.0;
+    const coverH = 470.0;
     const endH = 220.0;
 
     final heightPts = margin * 2 + coverH + headerH + footerH + rows.length * rowH + endH;
@@ -440,37 +440,90 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
             pw.SizedBox(height: 14),
             pw.Text('Warning!', style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 6),
-            pw.Text(
-              'Use of this guide is at your own risk. There are hazards and other items not listed and they will be encountered by you.\\n\\n'
-              'This course includes public roads, highways and trails - conditions of these are beyond the control of those that developed this guide. You are responsible for your actions and your compliance with any applicable laws.\\n\\n'
-              'By using this guide, you agree to not hold the developers liable for any type of misfortune you experience. If you do not agree, dispose of this guide immediately!',
-              style: const pw.TextStyle(fontSize: 7),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Use of this guide is at your own risk. There are hazards and other items not listed and they will be encountered by you.\\n\\n'
+                  'This course includes public roads, highways and trails - conditions of these are beyond the control of those that developed this guide. You are responsible for your actions and your compliance with any applicable laws.\\n',
+                  style: const pw.TextStyle(fontSize: 7),
+                ),
+                pw.Text(
+                  'By using this guide, you agree to not hold the developers liable for any type of misfortune you experience.',
+                  style: const pw.TextStyle(fontSize: 7, decoration: pw.TextDecoration.underline),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'If you do not agree, dispose of this guide immediately!',
+                  style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, fontStyle: pw.FontStyle.italic),
+                ),
+              ],
             ),
             pw.SizedBox(height: 10),
             pw.Text('_______________________', style: const pw.TextStyle(fontSize: 8)),
             pw.SizedBox(height: 10),
-            pw.Text('Legend -', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+            pw.Text('Legend -', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold, fontStyle: pw.FontStyle.italic)),
             pw.SizedBox(height: 6),
-            pw.Text(
-              '!...................... Caution/Danger!\\n'
-              '!!..................... Danger/Severe!\\n'
-              '!!!.................... Danger/Extreme!\\n'
-              'X TC !! ........... Trail Crossing\\n'
-              'X.....................Crossing\\n'
-              'IT.................... Single Track Trail\\n'
-              '2T................... Two Track\\n'
-              'DT.................. Dirt Road\\n'
-              'GV.................. Gravel Road\\n'
-              'MCCCT.......... MI Cross Country Cycle\\n'
-              'Trail  ORV TR..........ORV Trail\\n'
-              'ORV RT..........ORV Route\\n'
-              'PL...................Power Line\\n'
-              'PPL................ Pipe Line',
-              style: const pw.TextStyle(fontSize: 7),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('!', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Caution/Danger!', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('!!', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Danger/Severe!', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('!!!', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Danger/Extreme!', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('X TC !!', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Trail Crossing', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('1T', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Single Track Trail', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('2T', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Two Track', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('DT', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Dirt Road', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('GV', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Gravel Road', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('PR', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Paved Road', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('MCCCT', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('MI Cross Country Cycle', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('ORV', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('ORV Trail/Route', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('SM', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Snowmobile / SMORV', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 34, child: pw.Text('PL', style: const pw.TextStyle(fontSize: 7))),
+                  pw.Expanded(child: pw.Text('Power Line', style: const pw.TextStyle(fontSize: 7))),
+                ]),
+              ],
             ),
             pw.SizedBox(height: 10),
             pw.Text('Note -', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
-            pw.Text('On any intersection pictograph, always enter from the bottom vertical line', style: const pw.TextStyle(fontSize: 7)),
+            pw.Text('On any intersection pictograph, always enter from the bottom vertical line.', style: const pw.TextStyle(fontSize: 7)),
           ],
         ),
       ),
@@ -479,9 +532,17 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
       pw.Container(
         height: headerH,
         alignment: pw.Alignment.centerLeft,
-        child: pw.Text(
-          'ROLLCHART',
-          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          mainAxisAlignment: pw.MainAxisAlignment.center,
+          children: [
+            pw.Text('_______________________', style: const pw.TextStyle(fontSize: 8)),
+            pw.SizedBox(height: 2),
+            pw.Text(
+              'START - HAVE A BLAST !!',
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+            ),
+          ],
         ),
       ),
     );
@@ -553,16 +614,47 @@ final icon = await iconImage(r.iconKey);
         child: pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('End of Course – well done!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+            pw.Text('End of Course - well done!', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 10),
             pw.Text(chartName, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 6),
             pw.Text(totalMiles.toStringAsFixed(2) + ' Miles', style: const pw.TextStyle(fontSize: 10)),
             pw.SizedBox(height: 10),
-            pw.Text('2T = ' + (milesBy['2T'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['2T'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
-            pw.Text('PR = ' + (milesBy['PR'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['PR'] ?? 0.0).toString() + '%    GV = ' + (milesBy['GV'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['GV'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
-            pw.Text('DT = ' + (milesBy['DT'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['DT'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
-            pw.Text('1T = ' + (milesBy['1T'] ?? 0.0).toStringAsFixed(2) + ' miles = ' + _pct(milesBy['1T'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(children: [
+                  pw.SizedBox(width: 16, child: pw.Text('2T', style: const pw.TextStyle(fontSize: 8))),
+                  pw.SizedBox(width: 52, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text((milesBy['2T'] ?? 0.0).toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8)))),
+                  pw.SizedBox(width: 8),
+                  pw.SizedBox(width: 22, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_pct(milesBy['2T'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 16, child: pw.Text('PR', style: const pw.TextStyle(fontSize: 8))),
+                  pw.SizedBox(width: 52, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text((milesBy['PR'] ?? 0.0).toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8)))),
+                  pw.SizedBox(width: 8),
+                  pw.SizedBox(width: 22, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_pct(milesBy['PR'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 16, child: pw.Text('GV', style: const pw.TextStyle(fontSize: 8))),
+                  pw.SizedBox(width: 52, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text((milesBy['GV'] ?? 0.0).toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8)))),
+                  pw.SizedBox(width: 8),
+                  pw.SizedBox(width: 22, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_pct(milesBy['GV'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 16, child: pw.Text('DT', style: const pw.TextStyle(fontSize: 8))),
+                  pw.SizedBox(width: 52, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text((milesBy['DT'] ?? 0.0).toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8)))),
+                  pw.SizedBox(width: 8),
+                  pw.SizedBox(width: 22, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_pct(milesBy['DT'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)))),
+                ]),
+                pw.Row(children: [
+                  pw.SizedBox(width: 16, child: pw.Text('1T', style: const pw.TextStyle(fontSize: 8))),
+                  pw.SizedBox(width: 52, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text((milesBy['1T'] ?? 0.0).toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8)))),
+                  pw.SizedBox(width: 8),
+                  pw.SizedBox(width: 22, child: pw.Align(alignment: pw.Alignment.centerRight, child: pw.Text(_pct(milesBy['1T'] ?? 0.0).toString() + '%', style: const pw.TextStyle(fontSize: 8)))),
+                ]),
+              ],
+            ),
             pw.SizedBox(height: 16),
             pw.Text('          Cut Here', style: const pw.TextStyle(fontSize: 8)),
           ],
@@ -604,6 +696,14 @@ final icon = await iconImage(r.iconKey);
 
   static bool get isWeb => kIsWeb;
 }
+
+
+
+
+
+
+
+
 
 
 
