@@ -323,9 +323,10 @@ return b.toString();
     const headerH = 34.0;
     const footerH = 14.0;
     const coverH = 470.0;
-    const endH = 220.0;
-
-    final heightPts = margin * 2 + coverH + headerH + footerH + rows.length * rowH + endH;
+    const endH = 360.0;
+    final resetBarCountPdf = rows.where((r) => r.isReset || r.isGas).length;
+    final hasAnyGasPdf = rows.any((r) => r.isGas);
+    final heightPts = margin * 2 + coverH + headerH + footerH + rows.length * rowH + endH + (resetBarCountPdf * rowH) + 72.0 + (hasAnyGasPdf ? 32.0 : 0.0);
     
 
     String _abbrTags(String s) {
@@ -400,6 +401,22 @@ for (var i = 0; i < rows.length; i++) {
   if (rows[i].isGas) { firstGasIndexPdf = i; break; }
 }
 
+    int warnFromStartPdf = 0;
+    {
+      int? firstResetIdxPdf;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].isReset || rows[i].isGas) { firstResetIdxPdf = i; break; }
+      }
+      final end = firstResetIdxPdf ?? rows.length;
+      var n = 0;
+      for (var k = 0; k < end; k++) {
+        final s = _rowInfoText(rows[k]);
+        if (RegExp(r'\bXC(?:!!)?\b').hasMatch(s)) n++;
+      }
+      warnFromStartPdf = n;
+    }
+
+
 final warnNextReset = List<int>.filled(rows.length, 0);
 bool _hasXc(RowDraft rr) {
   final s = _rowInfoText(rr);
@@ -414,6 +431,21 @@ for (var i = 0; i < rows.length; i++) {
     if (_hasXc(rows[k])) n++;
   }
   warnNextReset[i] = n;
+
+    int warnFromStartPdf = 0;
+    {
+      int? firstResetIdxPdf;
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i].isReset || rows[i].isGas) { firstResetIdxPdf = i; break; }
+      }
+      final end = firstResetIdxPdf ?? rows.length;
+      var n = 0;
+      for (var k = 0; k < end; k++) {
+        if (_hasXc(rows[k])) n++;
+      }
+      warnFromStartPdf = n;
+    }
+
 }
 
 String _fmtMiles1(int? hund) {
@@ -461,6 +493,8 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
       if (totalMiles <= 0.0) return 0;
       return ((miles / totalMiles) * 100.0).round();
     }
+
+    items.add(pw.Container(height: 72));
 
     items.add(
       pw.Container(
@@ -584,9 +618,7 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
           ],
         ),
       ),
-    );
-
-    if (firstGasIndexPdf != null) {
+    );    if (firstGasIndexPdf != null) {
       final d = trueHundPdf[firstGasIndexPdf!];
       items.add(
         pw.Container(
@@ -595,6 +627,15 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
           child: pw.Text(_fmtMiles1(d) + ' miles to next gas', style: const pw.TextStyle(fontSize: 7)),
         ),
       );
+
+      items.add(
+        pw.Container(
+          height: 12,
+          alignment: pw.Alignment.center,
+          child: pw.Text('Warnings before first reset: ' + warnFromStartPdf.toString(), style: const pw.TextStyle(fontSize: 7)),
+        ),
+      );
+
       items.add(
         pw.Container(
           height: 2,
@@ -604,59 +645,8 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
         ),
       );
     }
-
-
-    for (var i = 0; i < rows.length; i++) {
+for (var i = 0; i < rows.length; i++) {
       final r = rows[i];
-      final isResetEffective = r.isReset || r.isGas;
-
-      if (isResetEffective) {
-        final milesSoFar = (trueHundPdf[i] / 100.0);
-        final milesToGo = (totalMiles - milesSoFar).clamp(0.0, 99999999.0);
-        final gasDist = nextGasDistHundPdf[i];
-        final isLastGas = r.isGas && gasDist == null;
-
-        items.add(
-          pw.Container(
-            height: rowH,
-            padding: const pw.EdgeInsets.symmetric(vertical: 4),
-            decoration: const pw.BoxDecoration(
-              border: pw.Border(bottom: pw.BorderSide(width: 0.5)),
-            ),
-            child: pw.Column(
-              mainAxisAlignment: pw.MainAxisAlignment.center,
-              children: [
-                if (r.isGas)
-                  pw.Text(
-                    isLastGas ? 'This is Last Gas' : (_fmtMiles1(gasDist) + ' miles to next gas'),
-                    style: pw.TextStyle(fontSize: 7, fontStyle: pw.FontStyle.italic),
-                    textAlign: pw.TextAlign.center,
-                  ),
-                if (r.isGas) pw.SizedBox(height: 2),
-                pw.Text(
-                  (((r.resetLabel ?? '').trim().isEmpty) ? 'Reset' : ('Reset ' + (r.resetLabel ?? '').trim())),
-                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
-                  textAlign: pw.TextAlign.center,
-                ),
-                pw.SizedBox(height: 2),
-                pw.Text(
-                  'Warnings during next reset: ' + warnNextReset[i].toString(),
-                  style: const pw.TextStyle(fontSize: 7),
-                  textAlign: pw.TextAlign.center,
-                ),
-                pw.SizedBox(height: 2),
-                pw.Text(
-                  _fmtMiles2(milesSoFar) + ' miles, ' + _fmtMiles2(milesToGo) + ' to go.',
-                  style: const pw.TextStyle(fontSize: 7),
-                  textAlign: pw.TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-        continue;
-      }
-
       final rec = (i + 1).toString();
       final odo = formatHundredths(r.odoHundredths);
       final surf = surfaceText(r.surface);
@@ -712,6 +702,53 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
           ),
         ),
       );
+
+      final isResetEffective = r.isReset || r.isGas;
+      if (isResetEffective) {
+        final milesSoFar = (trueHundPdf[i] / 100.0);
+        final milesToGo = (totalMiles - milesSoFar).clamp(0.0, 99999999.0);
+        final gasDist = nextGasDistHundPdf[i];
+        final isLastGas = r.isGas && gasDist == null;
+
+        items.add(
+          pw.Container(
+            height: rowH,
+            padding: const pw.EdgeInsets.symmetric(vertical: 4),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(bottom: pw.BorderSide(width: 0.5)),
+            ),
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              children: [
+                if (r.isGas)
+                  pw.Text(
+                    isLastGas ? 'This is Last Gas' : (_fmtMiles1(gasDist) + ' miles to next gas'),
+                    style: pw.TextStyle(fontSize: 7, fontStyle: pw.FontStyle.italic),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                if (r.isGas) pw.SizedBox(height: 2),
+                pw.Text(
+                  (((r.resetLabel ?? '').trim().isEmpty) ? 'Reset' : ('Reset ' + (r.resetLabel ?? '').trim())),
+                  style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  'Warnings during next reset: ' + warnNextReset[i].toString(),
+                  style: const pw.TextStyle(fontSize: 7),
+                  textAlign: pw.TextAlign.center,
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  _fmtMiles2(milesSoFar) + ' miles, ' + _fmtMiles2(milesToGo) + ' to go.',
+                  style: const pw.TextStyle(fontSize: 7),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     }
     items.add(
       pw.Container(
@@ -761,7 +798,14 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
                 ]),
               ],
             ),
-            pw.SizedBox(height: 16),
+            pw.SizedBox(height: 108),
+            pw.Container(
+              height: 2,
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(top: pw.BorderSide(width: 0.5)),
+              ),
+            ),
+            pw.SizedBox(height: 4),
             pw.Text('          Cut Here', style: const pw.TextStyle(fontSize: 8)),
           ],
         ),
