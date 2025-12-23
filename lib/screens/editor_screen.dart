@@ -275,17 +275,17 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: 'Export CSV',
             icon: const Icon(Icons.table_view),
-            onPressed: isComplete ? null : () async {
+            onPressed: isComplete ? () async {
               await RollchartExporter.exportCsvWeb(rows, filename: 'rollchart.csv');
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart.csv')));
               }
-            },
+            } : null,
           ),
           IconButton(
             tooltip: 'Export PDF (2.13")',
             icon: const Icon(Icons.picture_as_pdf),
-            onPressed: isComplete ? null : () async {
+            onPressed: isComplete ? () async {
               var safeName = widget.chartName.trim().replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '_');
               safeName = safeName.replaceAll(RegExp(r'^_+|_+$'), '');
               if (safeName.isEmpty) safeName = 'rollchart';
@@ -293,7 +293,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart_2.13in.pdf')));
               }
-            },
+            } : null,
           ),
         ],
       ),
