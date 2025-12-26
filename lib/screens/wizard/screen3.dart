@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 
-
+
+import '../../widgets/glove_keypad.dart';
 import '../icon_editor_screen.dart';
 class Screen3 extends StatefulWidget {
   final int recNo;
@@ -63,6 +64,35 @@ class _Screen3State extends State<Screen3> {
     d.roadNo = roadNoCtl.text.trim();
     d.roadName = roadNameCtl.text.trim().toUpperCase();
   }
+
+  Future<void> editRoadNoWithKeypad() async {
+    final result = await showGloveKeypad(
+      context: context,
+      mode: GloveKeypadMode.num,
+      initialText: roadNoCtl.text,
+      title: 'Road No',
+    );
+    if (result == null) return;
+    setState(() {
+      roadNoCtl.text = result.trim();
+      applyRoadEdits();
+    });
+  }
+
+  Future<void> editRoadNameWithKeypad() async {
+    final result = await showGloveKeypad(
+      context: context,
+      mode: GloveKeypadMode.alpha,
+      initialText: roadNameCtl.text,
+      title: 'RdName/Notes',
+    );
+    if (result == null) return;
+    setState(() {
+      roadNameCtl.text = result;
+      applyRoadEdits();
+    });
+  }
+
 
   Future<void> promptForResetName({bool turningOn = false}) async {
     final initial = (d.resetLabel ?? '').trim();
@@ -202,6 +232,12 @@ class _Screen3State extends State<Screen3> {
                               width: 110,
                               child: TextField(
                                 controller: roadNoCtl,
+                                readOnly: true,
+                                showCursor: true,
+                                enableInteractiveSelection: false,
+                                onTap: () async {
+                                  await editRoadNoWithKeypad();
+                                },
                                 decoration: const InputDecoration(
                                   labelText: 'Road No',
                                   border: OutlineInputBorder(),
@@ -213,6 +249,12 @@ class _Screen3State extends State<Screen3> {
                             Expanded(
                               child: TextField(
                                 controller: roadNameCtl,
+                                readOnly: true,
+                                showCursor: true,
+                                enableInteractiveSelection: false,
+                                onTap: () async {
+                                  await editRoadNameWithKeypad();
+                                },
                                 decoration: const InputDecoration(
                                   labelText: 'RdName/Notes',
                                   border: OutlineInputBorder(),
@@ -369,6 +411,21 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
     }
     setState(() => errorText = null);
   }
+
+
+  Future<void> openKeypad() async {
+    final result = await showGloveKeypad(
+      context: context,
+      mode: GloveKeypadMode.alpha,
+      initialText: ctl.text,
+      title: 'Reset Name',
+    );
+    if (result == null) return;
+    setState(() {
+      ctl.text = result;
+    });
+    validate();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -376,13 +433,15 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
       title: const Text('Reset Name'),
       content: TextField(
         controller: ctl,
+        readOnly: true,
+        showCursor: true,
+        enableInteractiveSelection: false,
         autofocus: true,
         decoration: InputDecoration(
           labelText: 'Enter reset name',
           errorText: errorText,
         ),
-        onChanged: (_) => validate(),
-        onSubmitted: (_) => validate(),
+        onTap: () async => await openKeypad(),
       ),
       actions: [
         TextButton(
