@@ -175,7 +175,8 @@ class _GloveKeypadScreenState extends State<GloveKeypadScreen> {
         ])),
         Expanded(child: Row(children: [
           Expanded(child: _squareButton(label: 'Z', onTap: () => _append('Z'))),
-          Expanded(flex: 2, child: _squareButton(label: 'SPACE', onTap: () => _append(' '))),
+          Expanded(child: _squareButton(label: '!', onTap: () => _append('!'))),
+          Expanded(child: _squareButton(label: 'SP', onTap: () => _append(' '))),
           Expanded(child: _squareButton(label: '?', onTap: _backspace)),
         ])),
         Expanded(child: Row(children: [
