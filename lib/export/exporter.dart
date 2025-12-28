@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../storage/local_store.dart';
@@ -836,6 +839,33 @@ for (var i = 0; i < rows.length; i++) {
     final bytes = await buildThermalPdfBytes(rows, chartName: chartName);
     downloadBytesWeb(filename, 'application/pdf', bytes);
   }
+
+  static Future<void> exportCsv(List<RowDraft> rows, {String filename = 'rollchart.csv'}) async {
+    if (kIsWeb) {
+      return exportCsvWeb(rows, filename: filename);
+    }
+    recomputeRollchartDerived(rows);
+    final csv = buildCsv(rows);
+    final dir = await getTemporaryDirectory();
+    final path = dir.path + Platform.pathSeparator + filename;
+    final f = File(path);
+    await f.writeAsString(csv, flush: true);
+    await Share.shareXFiles([XFile(path)], subject: filename);
+  }
+
+  static Future<void> exportPdf(List<RowDraft> rows, {required String filename, required String chartName}) async {
+    if (kIsWeb) {
+      return exportPdfWeb(rows, filename: filename, chartName: chartName);
+    }
+    recomputeRollchartDerived(rows);
+    final bytes = await buildThermalPdfBytes(rows, chartName: chartName);
+    final dir = await getTemporaryDirectory();
+    final path = dir.path + Platform.pathSeparator + filename;
+    final f = File(path);
+    await f.writeAsBytes(bytes, flush: true);
+    await Share.shareXFiles([XFile(path)], subject: filename);
+  }
+
 
   static bool get isWeb => kIsWeb;
 }

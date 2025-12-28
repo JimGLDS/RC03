@@ -276,9 +276,9 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
             tooltip: 'Export CSV',
             icon: const Icon(Icons.table_view),
             onPressed: isComplete ? () async {
-              await RollchartExporter.exportCsvWeb(rows, filename: 'rollchart.csv');
+              await RollchartExporter.exportCsv(rows, filename: 'rollchart.csv');
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart.csv')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(RollchartExporter.isWeb ? 'Downloaded rollchart.csv' : 'Shared rollchart.csv')));
               }
             } : null,
           ),
@@ -289,9 +289,9 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
               var safeName = widget.chartName.trim().replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '_');
               safeName = safeName.replaceAll(RegExp(r'^_+|_+$'), '');
               if (safeName.isEmpty) safeName = 'rollchart';
-              await RollchartExporter.exportPdfWeb(rows, filename: '${safeName}.pdf', chartName: widget.chartName);
+              await RollchartExporter.exportPdf(rows, filename: '${safeName}.pdf', chartName: widget.chartName);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded rollchart_2.13in.pdf')));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(RollchartExporter.isWeb ? 'Downloaded PDF' : 'Shared PDF')));
               }
             } : null,
           ),
