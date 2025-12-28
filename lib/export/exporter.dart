@@ -9,8 +9,9 @@ import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import 'download.dart';
+
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 
 import '../models.dart';
 
@@ -163,15 +164,7 @@ return b.toString();
   }
 
   static void downloadBytesWeb(String filename, String mime, Uint8List bytes) {
-    final blob = html.Blob([bytes], mime);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final a = html.AnchorElement(href: url)
-      ..download = filename
-      ..style.display = 'none';
-    html.document.body!.children.add(a);
-    a.click();
-    a.remove();
-    html.Url.revokeObjectUrl(url);
+    saveBytesAsFile(bytes, filename, mime);
   }
 
   static String _sheetForKey(String iconKey) {
@@ -250,7 +243,7 @@ return b.toString();
       final u = n.toUpperCase();
       if (u == 'X' || u == 'XBOX' || u == 'X-BOX' || u == 'X_BOX') return true;
       // common glyph markers that sometimes leak in as tokens
-      if (n == '?' || n == '?' || n == '?' || n == '•' || n == '·') return true;
+      if (n == '?' || n == '?' || n == '?' || n == '?' || n == '?') return true;
       return false;
     }
 
@@ -300,7 +293,7 @@ return b.toString();
       bits.add(label.isEmpty ? 'RESET' : 'RESET ');
     }
 
-    return bits.isEmpty ? '-' : bits.join(' • ');
+    return bits.isEmpty ? '-' : bits.join(' ? ');
   }
 
   static Future<Uint8List> buildThermalPdfBytes(List<RowDraft> rows, {required String chartName}) async {

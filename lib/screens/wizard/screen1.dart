@@ -135,7 +135,7 @@ class _Screen1State extends State<Screen1> {
               ),
             ),
             const SizedBox(height: 20),
-            SizedBox(height: 420, child: keypad()),
+            Expanded(child: keypad()),
           ],
         ),
       ),
@@ -239,18 +239,25 @@ final result = await Navigator.push<RowDraft>(
       surfaceBtn(SurfaceType.IT), surfaceBtn(SurfaceType.TT), keyNext(),
     ];
 
-    return GridView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        mainAxisExtent: 58,
-      ),
-      children: cells,
-    );
-  }
+    return LayoutBuilder(
+      builder: (context, bc) {
+        const spacing = 10.0;
+        final tileW = (bc.maxWidth - (spacing * 2)) / 3.0;
+        final tileH = (bc.maxHeight - (spacing * 5)) / 6.0;
+        final ar = tileW / tileH;
+
+        return GridView(
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: spacing,
+            crossAxisSpacing: spacing,
+            childAspectRatio: ar,
+          ),
+          children: cells,
+        );
+      },
+    );}
 }
 
 

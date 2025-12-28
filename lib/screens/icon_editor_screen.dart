@@ -326,15 +326,15 @@ class _StrokePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final s in strokes) {
-      _draw(canvas, s.points, s.isEraser);
+      _draw(canvas, s.points, s.isEraser, preview: false);
     }
     final a = active;
     if (a != null && a.length >= 2) {
-      _draw(canvas, a, activeIsEraser);
+      _draw(canvas, a, activeIsEraser, preview: true);
     }
   }
 
-  void _draw(Canvas canvas, List<Offset> pts, bool eraser) {
+  void _draw(Canvas canvas, List<Offset> pts, bool eraser, {required bool preview}) {
     if (pts.length < 2) return;
 
     final paint = Paint()
@@ -344,9 +344,15 @@ class _StrokePainter extends CustomPainter {
       ..strokeWidth = strokeWidth;
 
     if (eraser) {
-      paint.blendMode = BlendMode.clear;
-      paint.color = Colors.transparent;
+      if (preview) {
+        paint.blendMode = BlendMode.srcOver;
+        paint.color = Colors.white;
+      } else {
+        paint.blendMode = BlendMode.srcOver;
+        paint.color = Colors.white;
+      }
     } else {
+      paint.blendMode = BlendMode.srcOver;
       paint.color = Colors.black;
     }
 
@@ -361,6 +367,7 @@ class _StrokePainter extends CustomPainter {
   bool shouldRepaint(covariant _StrokePainter oldDelegate) {
     return oldDelegate.strokes != strokes ||
         oldDelegate.active != active ||
-        oldDelegate.strokeWidth != strokeWidth;
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.activeIsEraser != activeIsEraser;
   }
 }
