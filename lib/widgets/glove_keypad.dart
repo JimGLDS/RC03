@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 enum GloveKeypadMode { alpha, num }
 
@@ -177,7 +177,7 @@ class _GloveKeypadScreenState extends State<GloveKeypadScreen> {
           Expanded(child: _squareButton(label: 'Z', onTap: () => _append('Z'))),
           Expanded(child: _squareButton(label: '!', onTap: () => _append('!'))),
           Expanded(child: _squareButton(label: 'SP', onTap: () => _append(' '))),
-          Expanded(child: _squareButton(label: '?', onTap: _backspace)),
+          Expanded(child: _squareButton(label: '⌫', onTap: _backspace)),
         ])),
         Expanded(child: Row(children: [
           Expanded(child: _squareButton(label: 'CANCEL', onTap: _cancel)),
@@ -192,7 +192,7 @@ Widget _numGrid() {
       ['7', '8', '9'],
       ['4', '5', '6'],
       ['1', '2', '3'],
-      ['-', '0', '?'],
+      ['-', '0', '⌫'],
     ];
 
     return Column(
@@ -206,7 +206,7 @@ Widget _numGrid() {
                     child: _squareButton(
                       label: k,
                       onTap: () {
-                        if (k == '?') return _backspace();
+                        if (k == '⌫') return _backspace();
                         _append(k);
                       },
                     ),
