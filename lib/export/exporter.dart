@@ -466,30 +466,27 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
       return d / 100.0;
     }
 
-    String _abbrSurf(SurfaceType s) {
+    String _surfKeyPdf(SurfaceType s) {
       final t = surfaceText(s);
-      if (t == '2T') return '2T';
-      if (t == 'DT') return 'DT';
-      if (t == 'GV') return 'GV';
-      if (t == 'IT') return 'IT';
-      if (t == 'PR') return 'PR';
+      if (t == '1T') return '1T';
+      if (t == '2T' || t == 'DT' || t == 'GV' || t == 'PR') return t;
       return t;
     }
 
-    final milesBy = <String, double>{ '2T': 0.0, 'PR': 0.0, 'GV': 0.0, 'DT': 0.0, '1T': 0.0 };
+    final milesBy = <String, double>{ '2T': 0.0, '1T': 0.0, 'DT': 0.0, 'GV': 0.0, 'PR': 0.0 };
 
-        for (var i = 0; i < rows.length; i++) {
-      if (rows[i].isReset) continue;
+    for (var i = 0; i < rows.length; i++) {
       final m = segHundPdf[i] / 100.0;
-      final k = _abbrSurf(rows[i].surface);
-      milesBy[k] = (milesBy[k] ?? 0.0) + m;
+      final k = _surfKeyPdf(rows[i].surface);
+      if (milesBy.containsKey(k)) {
+        milesBy[k] = (milesBy[k] ?? 0.0) + m;
+      }
     }
 
     int _pct(double miles) {
       if (totalMiles <= 0.0) return 0;
       return ((miles / totalMiles) * 100.0).round();
     }
-
     items.add(pw.Container(height: 72));
 
     items.add(
@@ -869,38 +866,3 @@ for (var i = 0; i < rows.length; i++) {
 
   static bool get isWeb => kIsWeb;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
