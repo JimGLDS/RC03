@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
 
@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../storage/local_store.dart';
+import '../project/project_icon_pack.dart';
 import 'package:image/image.dart' as img;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -866,3 +867,4 @@ for (var i = 0; i < rows.length; i++) {
 
   static bool get isWeb => kIsWeb;
 }
+

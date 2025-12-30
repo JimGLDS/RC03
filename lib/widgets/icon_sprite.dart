@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import '../storage/local_store.dart';
+import '../project/project_icon_pack.dart';
 
 /// Crops one cell from a 3x3 sprite sheet (row-major index 0..8)
 /// by drawing the full image at 3x size behind a clipped square and
@@ -81,10 +82,29 @@ class IconGlyph extends StatelessWidget {
     final num = int.tryParse(trail) ?? 1;
     return (num - 1).clamp(0, 8);
   }
-
   @override
   Widget build(BuildContext context) {
     final k = iconKey.toUpperCase();
+
+    if (ProjectIconPack.isActive) {
+      return FutureBuilder<Uint8List>(
+        future: ProjectIconPack.iconPngBytes(k),
+        builder: (context, snap) {
+          final bytes = snap.data;
+          if (bytes != null && bytes.isNotEmpty) {
+            return SizedBox(
+              width: size,
+              height: size,
+              child: Padding(
+                padding: EdgeInsets.all(padding),
+                child: Image.memory(bytes, fit: BoxFit.contain, filterQuality: FilterQuality.high),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      );
+    }
 
     if (k.startsWith('C')) {
       return FutureBuilder<Uint8List?>(
@@ -119,5 +139,4 @@ class IconGlyph extends StatelessWidget {
       padding: padding,
     );
   }
-}
-
+  }

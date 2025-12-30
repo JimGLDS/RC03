@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../models.dart';
 import '../widgets/icon_sprite.dart';
 import 'wizard/screen1.dart';
 import '../export/exporter.dart';
 import '../storage/local_store.dart';
-
+import '../project/project_bundle_share.dart';
 class RollChartEditorScreen extends StatefulWidget {
   final String chartName;
   const RollChartEditorScreen({super.key, required this.chartName});
@@ -109,7 +109,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       bits.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
 
-    return (bits.isEmpty ? '—' : bits.join(' • ')).replaceAll('[','').replaceAll(']','');
+    return (bits.isEmpty ? 'â€”' : bits.join(' â€¢ ')).replaceAll('[','').replaceAll(']','');
   }
 
   Future<void> editRow(int index) async {
@@ -273,6 +273,19 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
             },
           ),
           IconButton(
+            tooltip: 'Export Project JSON',
+            icon: const Icon(Icons.folder),
+            onPressed: isComplete ? () async {
+              await _save();
+              await ProjectBundleShare.exportProjectJson(widget.chartName);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(RollchartExporter.isWeb ? 'Downloaded project JSON' : 'Shared project JSON')),
+                );
+              }
+            } : null,
+          ),
+          IconButton(
             tooltip: 'Export CSV',
             icon: const Icon(Icons.table_view),
             onPressed: isComplete ? () async {
@@ -414,6 +427,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
   }
 }
+
 
 
 

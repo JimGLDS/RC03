@@ -1,5 +1,9 @@
 ﻿import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import '../storage/local_store.dart';
+import '../project/project_bundle.dart';
+import '../project/project_bundle_io.dart';
 import 'editor_screen.dart';
 
 class RollchartLibraryScreen extends StatefulWidget {
@@ -18,7 +22,6 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     super.initState();
     refresh();
   }
-
   Future<void> refresh() async {
     setState(() => loading = true);
     final list = await LocalStore.listCharts();
@@ -29,6 +32,36 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     });
   }
 
+  Future<void> importProjectJson() async {
+    try {
+      final res = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        withData: true,
+      );
+      if (res == null || res.files.isEmpty) return;
+
+      final bytes = res.files.single.bytes;
+      if (bytes == null || bytes.isEmpty) return;
+
+      final text = utf8.decode(bytes);
+      final bundle = ProjectBundleV1.fromJsonString(text);
+
+      await ProjectBundleIO.applyToStore(bundle);
+      await refresh();
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => RollChartEditorScreen(chartName: bundle.name)),
+      ).then((_) => refresh());
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Import failed: $e')),
+      );
+    }
+  }
   Future<String?> promptName(String title, {String initial = ''}) async {
     final c = TextEditingController(text: initial);
     return showDialog<String>(
@@ -119,6 +152,11 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       appBar: AppBar(
         title: const Text('Rollchart Library'),
         actions: [
+          IconButton(
+            onPressed: importProjectJson,
+            tooltip: 'Import Project JSON',
+            icon: const Icon(Icons.folder_open),
+          ),
           IconButton(onPressed: refresh, tooltip: 'Refresh', icon: const Icon(Icons.refresh)),
         ],
       ),
@@ -164,3 +202,5 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     );
   }
 }
+
+

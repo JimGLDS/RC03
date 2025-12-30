@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
@@ -106,7 +106,33 @@ class LocalStore {
     }
     await sp.remove(_customIconIndexKey);
   }
-static const String _indexKey = 'rollchart:index:v1';
+  // ---------- PROJECT ICON PACK ----------
+  // Stores a per-project snapshot of base sprite sheets + any custom icons needed by the project.
+  // This prevents future app updates from changing the look of an old project.
+  static String _packKey(String chartName) => 'rollchart:pack:' + chartName.toLowerCase();
+
+  static Future<void> saveProjectIconPack(String chartName, Map<String, dynamic> pack) async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString(_packKey(chartName), jsonEncode(pack));
+  }
+
+  static Future<Map<String, dynamic>?> loadProjectIconPack(String chartName) async {
+    final sp = await SharedPreferences.getInstance();
+    final raw = sp.getString(_packKey(chartName));
+    if (raw == null || raw.trim().isEmpty) return null;
+    try {
+      return (jsonDecode(raw) as Map).cast<String, dynamic>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> deleteProjectIconPack(String chartName) async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.remove(_packKey(chartName));
+  }
+
+  static const String _indexKey = 'rollchart:index:v1';
 
   static String _key(String chartName) => 'rollchart:${chartName.toLowerCase()}';
 
@@ -209,23 +235,34 @@ static const String _indexKey = 'rollchart:index:v1';
   static Future<void> deleteChart(String chartName) async {
     final sp = await SharedPreferences.getInstance();
     await sp.remove(_key(chartName));
+    await sp.remove(_packKey(chartName));
+
     final metas = await listCharts();
     metas.removeWhere((m) => m.name.toLowerCase() == chartName.toLowerCase());
     await _writeIndex(metas);
   }
-
   static Future<void> renameChart(String oldName, String newName) async {
     final loaded = await loadChart(oldName);
     if (loaded == null) return;
+
+    final pack = await loadProjectIconPack(oldName);
+    if (pack != null) {
+      await saveProjectIconPack(newName, pack);
+    }
 
     await saveChart(chartName: newName, isDone: loaded.isDone, rows: loaded.rows);
     await deleteChart(oldName);
     await _upsertMeta(newName, loaded.isDone);
   }
-
   static Future<void> duplicateChart(String fromName, String toName) async {
     final loaded = await loadChart(fromName);
     if (loaded == null) return;
+
+    final pack = await loadProjectIconPack(fromName);
+    if (pack != null) {
+      await saveProjectIconPack(toName, pack);
+    }
+
     await saveChart(chartName: toName, isDone: false, rows: loaded.rows);
   }
 
@@ -259,6 +296,12 @@ static const String _indexKey = 'rollchart:index:v1';
     return (isDone: isDone, rows: rows);
   }
 }
+
+
+
+
+
+
 
 
 
