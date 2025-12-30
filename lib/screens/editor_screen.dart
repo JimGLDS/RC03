@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models.dart';
 import '../widgets/icon_sprite.dart';
 import 'wizard/screen1.dart';
@@ -109,7 +109,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       bits.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
 
-    return (bits.isEmpty ? 'â€”' : bits.join(' â€¢ ')).replaceAll('[','').replaceAll(']','');
+    return (bits.isEmpty ? '—' : bits.join(' • ')).replaceAll('[','').replaceAll(']','');
   }
 
   Future<void> editRow(int index) async {
