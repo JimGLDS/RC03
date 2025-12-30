@@ -119,7 +119,7 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
   }
 
   double _strokeWidth(double canvasSize) {
-    final base = (canvasSize * 0.024).clamp(2.0, 8.0);
+    final base = (canvasSize * 0.030).clamp(2.0, 8.0);
     if (isEraser == true) return (base + 2.0).clamp(2.0, 10.0);
     return base;
   }
