@@ -1,9 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import '../storage/local_store.dart';
 import '../project/project_bundle.dart';
 import '../project/project_bundle_io.dart';
+import '../project/project_icon_pack.dart';
 import 'editor_screen.dart';
 
 class RollchartLibraryScreen extends StatefulWidget {
@@ -48,6 +49,9 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       final bundle = ProjectBundleV1.fromJsonString(text);
 
       await ProjectBundleIO.applyToStore(bundle);
+      if (ProjectIconPack.active != null) {
+        await LocalStore.saveProjectIconPack(bundle.name, ProjectIconPack.active!);
+      }
       await refresh();
       if (!mounted) return;
 
@@ -93,15 +97,40 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       return;
     }
     await LocalStore.saveChart(chartName: name, isDone: false, rows: []);
+    await _ensureIconPack(name);
     await refresh();
     if (!mounted) return;
     Navigator.push(context, MaterialPageRoute(builder: (_) => RollChartEditorScreen(chartName: name)))
         .then((_) => refresh());
   }
 
+  Future<void> _ensureIconPack(String chartName) async {
+    final existing = await LocalStore.loadProjectIconPack(chartName);
+    if (existing != null) {
+      ProjectIconPack.setActive(existing);
+      return;
+    }
+
+    final loaded = await LocalStore.loadChart(chartName);
+    final usedCustom = <String>{};
+    if (loaded != null) {
+      for (final r in loaded.rows) {
+        final k = (r.iconKey).toUpperCase();
+        if (k.startsWith('C')) usedCustom.add(k);
+      }
+    }
+
+    final pack = await ProjectIconPack.buildPackForProject(usedCustom.toList()..sort());
+    await LocalStore.saveProjectIconPack(chartName, pack);
+    ProjectIconPack.setActive(pack);
+  }
+
   void openChart(String name) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => RollChartEditorScreen(chartName: name)))
-        .then((_) => refresh());
+    _ensureIconPack(name).then((_) {
+      if (!mounted) return;
+      Navigator.push(context, MaterialPageRoute(builder: (_) => RollChartEditorScreen(chartName: name)))
+          .then((_) => refresh());
+    });
   }
 
   Future<void> renameChart(RollchartMeta m) async {
@@ -116,7 +145,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
   }
 
   Future<void> duplicateChart(RollchartMeta m) async {
-    final newName = await promptName('Duplicate as…', initial: '${m.name} copy');
+    final newName = await promptName('Duplicate as...', initial: '${m.name} copy');
     if (newName == null || newName.isEmpty) return;
     if (nameExists(newName)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('That name already exists.')));
@@ -202,5 +231,3 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     );
   }
 }
-
-
