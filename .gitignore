@@ -1,4 +1,4 @@
-﻿# Flutter / Dart
+# Flutter / Dart
 .dart_tool/
 build/
 
@@ -15,4 +15,8 @@ Thumbs.db
 
 # Rollchart local backups
 *.bak
+
+
+# Local build artifacts
+_artifacts/
 
