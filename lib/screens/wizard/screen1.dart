@@ -77,7 +77,7 @@ class _Screen1State extends State<Screen1> {
     final max = widget.maxOdoHundredthsExclusive;
 
     if (min != null && odoHundredths <= min) {
-      return 'Must be greater than previous (${formatHundredths(min)})';
+      return 'Must be greater than (${formatHundredths(min)})';
     }
     if (max != null && odoHundredths >= max) {
       return 'Must be less than next (${formatHundredths(max)})';
@@ -91,14 +91,14 @@ class _Screen1State extends State<Screen1> {
       appBar: AppBar(
         leading: const BackButton(),
         title: SizedBox(
-          height: 18, // reserved space so the layout never jumps
+          height: 28, // reserved space so the layout never jumps
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
               odoError ?? '',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 13),
+              style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700, fontSize: 20),
             ),
           ),
         ),
@@ -135,7 +135,7 @@ class _Screen1State extends State<Screen1> {
               ),
             ),
             const SizedBox(height: 20),
-            Expanded(child: keypad()),
+            Expanded(child: SafeArea(top: false, child: keypad())),
           ],
         ),
       ),
@@ -155,8 +155,7 @@ class _Screen1State extends State<Screen1> {
             selected ? null : Theme.of(context).colorScheme.onSurface,
       ),
       onPressed: () => setState(() => surface = s),
-      child: Text(surfaceText(s),
-          style: const TextStyle(fontWeight: FontWeight.w900)),
+      child: FittedBox(fit: BoxFit.scaleDown, child: Text(surfaceText(s), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900))),
     );
   }
   Widget keypad() {
@@ -166,7 +165,7 @@ class _Screen1State extends State<Screen1> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onPressed: () => tapDigit(d),
-          child: Text(d, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+          child: FittedBox(fit: BoxFit.scaleDown, child: Text(d, style: const TextStyle(fontSize: 72, fontWeight: FontWeight.w900))),
         );
 
     Widget keyBackspace() => FilledButton(
@@ -175,10 +174,10 @@ class _Screen1State extends State<Screen1> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
           onPressed: backspace,
-          child: const Icon(Icons.backspace_outlined),
+          child: const FittedBox(fit: BoxFit.scaleDown, child: Icon(Icons.backspace_outlined, size: 72)),
         );
 
-    Widget keyNext() => FilledButton.icon(
+    Widget keyNext() => FilledButton(
           style: FilledButton.styleFrom(
             padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -221,8 +220,7 @@ final result = await Navigator.push<RowDraft>(
                   if (result != null && context.mounted) Navigator.pop(context, result);
                 }
               : null,
-          icon: const Icon(Icons.arrow_forward),
-          label: const Text('NEXT'),
+          child: FittedBox(fit: BoxFit.scaleDown, child: const Text('NEXT', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900))),
         );
 
     final cells = <Widget>[
