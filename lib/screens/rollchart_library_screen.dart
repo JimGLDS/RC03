@@ -192,7 +192,8 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
         icon: const Icon(Icons.add),
         label: const Text('New'),
       ),
-      body: loading
+      body: SafeArea(
+        child: loading
           ? const Center(child: CircularProgressIndicator())
           : charts.isEmpty
               ? const Center(child: Text('No rollcharts yet.\nTap New to start one.', textAlign: TextAlign.center))
@@ -226,7 +227,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
                     );
                   },
                 ),
+      ),
     );
   }
 }
-
