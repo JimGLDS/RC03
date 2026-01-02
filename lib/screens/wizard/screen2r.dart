@@ -30,12 +30,12 @@ class _Screen2RState extends State<Screen2R> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 44,
+        toolbarHeight: 36,
         titleSpacing: 0,
-        title: const Text('Decision — RIGHT (2R)', style: TextStyle(fontSize: 16)),
+        title: const Text('Decision - RIGHT (2R)', style: TextStyle(fontSize: 14)),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.fromLTRB(12, 12, 12, 12 + MediaQuery.of(context).padding.bottom),
         child: Column(
           children: [
             const SizedBox.shrink(),
@@ -56,7 +56,7 @@ class _Screen2RState extends State<Screen2R> {
             const Text('RIGHT', style: TextStyle(fontWeight: FontWeight.w900)),
             const SizedBox(height: 4),
 
-            // TOP: 3×3 ICONS (square, no scroll)
+            // TOP: 3Ãƒâ€”3 ICONS (square, no scroll)
             LayoutBuilder(
               builder: (context, c) {
                 const spacing = 10.0;
@@ -108,7 +108,7 @@ class _Screen2RState extends State<Screen2R> {
                   const spacing = 10.0;
                   final tileW = (bc.maxWidth - (spacing * 2)) / 3.0;
                   final tileH = (bc.maxHeight - (spacing * 3)) / 4.0;
-                  final ar = tileW / tileH;
+                  final ar = (tileW / tileH).clamp(1.25, 10.0);
 
                   return GridView.builder(
                     physics: const NeverScrollableScrollPhysics(),
