@@ -396,7 +396,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       ),
 
       floatingActionButton: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
+        padding: EdgeInsets.only(bottom: bottomInset + MediaQuery.of(context).padding.bottom),
         child: FloatingActionButton.extended(
         onPressed: isComplete ? null : () async {
           final recNo = rows.length + 1;
