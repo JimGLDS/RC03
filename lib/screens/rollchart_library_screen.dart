@@ -49,9 +49,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       final bundle = ProjectBundleV1.fromJsonString(text);
 
       await ProjectBundleIO.applyToStore(bundle);
-      if (ProjectIconPack.active != null) {
-        await LocalStore.saveProjectIconPack(bundle.name, ProjectIconPack.active!);
-      }
+
       await refresh();
       if (!mounted) return;
 
@@ -231,3 +229,4 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     );
   }
 }
+

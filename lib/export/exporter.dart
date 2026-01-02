@@ -1,12 +1,10 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter/services.dart' show rootBundle;
-
 import '../storage/local_store.dart';
 import '../project/project_icon_pack.dart';
 import 'package:image/image.dart' as img;
@@ -171,44 +169,9 @@ return b.toString();
     saveBytesAsFile(bytes, filename, mime);
   }
 
-  static String _sheetForKey(String iconKey) {
-    if (iconKey.startsWith('T')) return 'assets/icons/icons_t.png';
-    if (iconKey.startsWith('L')) return 'assets/icons/icons_l.png';
-    return 'assets/icons/icons_r.png';
+  static Future<Uint8List> _iconPngBytes(String iconKey) {
+    return ProjectIconPack.iconPngBytes(iconKey);
   }
-
-  static int _indexForKey(String iconKey) {
-    final m = RegExp(r'(\d\d)$').firstMatch(iconKey);
-    final n = int.tryParse(m?.group(1) ?? '') ?? 1;
-    return (n - 1).clamp(0, 8);
-  }
-
-  static Future<Uint8List> _iconPngBytes(String iconKey) async {
-    final k = iconKey.toUpperCase();
-    if (k.startsWith('C')) {
-      final bytes = await LocalStore.loadCustomIconPng(k);
-      if (bytes != null && bytes.isNotEmpty) return bytes;
-    }
-    final sheetPath = _sheetForKey(iconKey);
-    final idx = _indexForKey(iconKey);
-
-    final data = await rootBundle.load(sheetPath);
-    final sheetBytes = data.buffer.asUint8List();
-    final decoded = img.decodeImage(sheetBytes);
-    if (decoded == null) throw Exception('Could not decode sprite sheet: $sheetPath');
-
-    final tileW = (decoded.width / 3).floor();
-    final tileH = (decoded.height / 3).floor();
-    final row = idx ~/ 3;
-    final col = idx % 3;
-    final x = col * tileW;
-    final y = row * tileH;
-
-    final cropped = img.copyCrop(decoded, x: x, y: y, width: tileW, height: tileH);
-    final png = img.encodePng(cropped);
-    return Uint8List.fromList(png);
-  }
-
   static String _rowRightText(RowDraft r) {
     final parts = <String>[];
     final road = [
@@ -867,4 +830,3 @@ for (var i = 0; i < rows.length; i++) {
 
   static bool get isWeb => kIsWeb;
 }
-

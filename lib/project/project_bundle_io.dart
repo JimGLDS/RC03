@@ -1,4 +1,5 @@
-﻿import 'dart:typed_data';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -18,12 +19,27 @@ class ProjectBundleIO {
       throw StateError('Project not found: ');
     }
 
-    // Load base sprite sheets from assets
-    final baseSheets = <String, Uint8List>{
-      'T': await _loadAssetPng('assets/icons/icons_t.png'),
-      'L': await _loadAssetPng('assets/icons/icons_l.png'),
-      'R': await _loadAssetPng('assets/icons/icons_r.png'),
-    };
+    // Prefer frozen per-project pack for export (created on create/open/import).
+    // If missing (legacy), fall back to current assets (do NOT save/overwrite here).
+    final pack = await LocalStore.loadProjectIconPack(chartName);
+
+    final baseSheets = <String, Uint8List>{};
+
+    final baseSheetsRaw =
+        (pack?['baseSheets'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+
+    for (final e in baseSheetsRaw.entries) {
+      final k = e.key.toUpperCase().trim();
+      final v = (e.value ?? '') as String;
+      if (v.isEmpty) continue;
+      baseSheets[k] = Uint8List.fromList(base64Decode(v));
+    }
+
+    if (baseSheets.isEmpty) {
+      baseSheets['T'] = await _loadAssetPng('assets/icons/icons_t.png');
+      baseSheets['L'] = await _loadAssetPng('assets/icons/icons_l.png');
+      baseSheets['R'] = await _loadAssetPng('assets/icons/icons_r.png');
+    }
 
     // Load all custom icons currently present
     final customKeys = await LocalStore.listCustomIconKeys();
@@ -61,6 +77,11 @@ class ProjectBundleIO {
       baseSheets: bundle.baseSheets,
       customIcons: bundle.customIcons,
     );
+
+    // Persist the frozen pack for this project (import path)
+    if (ProjectIconPack.active != null) {
+      await LocalStore.saveProjectIconPack(bundle.name, ProjectIconPack.active!);
+    }
   }
 
   // ---------- helpers ----------
