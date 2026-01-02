@@ -307,7 +307,7 @@ return b.toString();
           .replaceAll('?', '')
           .replaceAll('[', '')
           .replaceAll(']', '')
-          .replaceAll(RegExp(r'\bXC(?:!!)?\b'), 'XC!!');
+          .replaceAll(RegExp(r'(?<!\w)\[?XC(?:!!)?\]?(?!\w)'), 'XC!!');
       // XC!! stays XC!!
     }
 
@@ -371,7 +371,7 @@ for (var i = 0; i < rows.length; i++) {
       var n = 0;
       for (var k = 0; k < end; k++) {
         final s = _rowInfoText(rows[k]);
-        if (RegExp(r'\bXC(?:!!)?\b').hasMatch(s)) n++;
+        if (RegExp(r'^!{1,3}').hasMatch((rows[k].roadNo ?? '').trim()) || RegExp(r'^!{1,3}').hasMatch((rows[k].roadName ?? '').trim()) || RegExp(r'(?<!\w)\[?XC(?:!!)?\]?(?!\w)').hasMatch(s)) n++;
       }
       warnFromStartPdf = n;
     }
@@ -380,7 +380,7 @@ for (var i = 0; i < rows.length; i++) {
 final warnNextReset = List<int>.filled(rows.length, 0);
 bool _hasXc(RowDraft rr) {
   final s = _rowInfoText(rr);
-  return RegExp(r'\bXC(?:!!)?\b').hasMatch(s);
+  return RegExp(r'^!{1,3}').hasMatch((rr.roadNo ?? '').trim()) || RegExp(r'^!{1,3}').hasMatch((rr.roadName ?? '').trim()) || RegExp(r'(?<!\w)\[?XC(?:!!)?\]?(?!\w)').hasMatch(s);
 }
 for (var i = 0; i < rows.length; i++) {
   if (!(rows[i].isReset || rows[i].isGas)) continue;
