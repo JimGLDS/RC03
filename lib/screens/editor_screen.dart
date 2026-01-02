@@ -255,7 +255,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
   @override
   Widget build(BuildContext context) {
     const maxPaperWidth = 360.0;
-
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.chartName),
@@ -317,7 +317,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
               ? const Center(child: Text('No rows yet.\nTap Add Row.', textAlign: TextAlign.center))
               : ListView.separated(
                    controller: _listCtrl,
-                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 120),
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 120 + bottomInset),
                   itemCount: rows.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, i) {
@@ -395,7 +395,9 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: FloatingActionButton.extended(
         onPressed: isComplete ? null : () async {
           final recNo = rows.length + 1;
           final draft = await Navigator.push<RowDraft>(
@@ -423,17 +425,8 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         },
         icon: const Icon(Icons.add),
         label: const Text('Add Row'),
+        ),
       ),
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
