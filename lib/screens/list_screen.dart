@@ -31,7 +31,7 @@ class _RollChartListScreenState extends State<RollChartListScreen> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: SafeArea(bottom: true, child: FloatingActionButton.extended(
         onPressed: () async {
           final ctrl = TextEditingController(text: 'New Roll Chart');
           final ok = await showDialog<bool>(
@@ -51,7 +51,7 @@ class _RollChartListScreenState extends State<RollChartListScreen> {
         },
         icon: const Icon(Icons.add),
         label: const Text('New'),
-      ),
+      )),
     );
   }
 }
