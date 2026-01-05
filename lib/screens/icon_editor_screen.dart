@@ -370,6 +370,7 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
                     label: const Text('Save'),
                   ),
                 ),
+                SizedBox(height: 12 + MediaQuery.of(context).padding.bottom),
               ],
            );
           },
