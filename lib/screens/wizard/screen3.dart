@@ -154,6 +154,7 @@ class _Screen3State extends State<Screen3> {
   Widget build(BuildContext context) {
     final roadDisplay = ('${d.roadNo ?? ''} ${d.roadName ?? ''}').trim();
     final resetLabel = (d.resetLabel ?? '').trim();
+    final safeBottom = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       appBar: AppBar(title: Text('Review / Edit - Row ${widget.recNo}')),
@@ -357,6 +358,7 @@ class _Screen3State extends State<Screen3> {
                 ),
               ],
             ),
+            SizedBox(height: 12 + safeBottom),
           ],
         ),
       ),
