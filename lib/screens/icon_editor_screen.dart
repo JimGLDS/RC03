@@ -247,6 +247,8 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 40,
+        titleSpacing: 12,
         title: const Text('Edit Icon'),
         leading: IconButton(
           icon: const Icon(Icons.close),
