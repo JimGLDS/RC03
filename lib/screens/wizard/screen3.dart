@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
 
-
+
 import '../../widgets/glove_keypad.dart';
 import '../icon_editor_screen.dart';
 class Screen3 extends StatefulWidget {
@@ -97,17 +97,13 @@ class _Screen3State extends State<Screen3> {
   Future<void> promptForResetName({bool turningOn = false}) async {
     final initial = (d.resetLabel ?? '').trim();
 
-    final result = await showDialog<String>(
+    final result = await showGloveKeypad(
       context: context,
-      barrierDismissible: false,
-      builder: (_) => _ResetNameDialog(
-        initial: initial,
-        existingResetNames: widget.existingResetNames,
-      ),
+      mode: GloveKeypadMode.alpha,
+      initialText: initial,
+      title: 'Reset Name',
     );
-
     if (!mounted) return;
-
     if (result == null) {
       // Cancel => if we were turning on, revert the switch.
       if (turningOn) {
@@ -176,7 +172,7 @@ class _Screen3State extends State<Screen3> {
                             builder: (_) => IconEditorScreen(iconKey: d.iconKey),
                           ),
                         );
-                        if (!mounted) return;
+    if (!mounted) return;
                         if (updatedKey != null && updatedKey != d.iconKey) {
                           setState(() => d.iconKey = updatedKey);
                         }
@@ -413,7 +409,7 @@ class _ResetNameDialogState extends State<_ResetNameDialog> {
     }
     setState(() => errorText = null);
   }
-
+
 
   Future<void> openKeypad() async {
     final result = await showGloveKeypad(
