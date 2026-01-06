@@ -92,7 +92,43 @@ class _IconEditorScreenState extends State<IconEditorScreen> {
       if (bytes == null || bytes.isEmpty) return;
 
       final upper = iconKey.toUpperCase();
-      final outKey = upper.startsWith('C') ? upper : await LocalStore.nextCustomIconKey();
+      String outKey;
+
+      final isCustomKey = RegExp(r'^C\d\d$').hasMatch(upper);
+      if (isCustomKey) {
+        final choice = await showDialog<String>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Save custom icon'),
+            content: const Text('Do you want to overwrite this or create a new one?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, 'cancel'),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, 'new'),
+                child: const Text('Create new'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, 'overwrite'),
+                child: const Text('Overwrite'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted) return;
+
+        if (choice == 'overwrite') {
+          outKey = upper;
+        } else if (choice == 'new') {
+          outKey = await LocalStore.nextCustomIconKey();
+        } else {
+          return;
+        }
+      } else {
+        outKey = await LocalStore.nextCustomIconKey();
+      }
       await LocalStore.saveCustomIconPng(outKey, bytes);
 
       if (!mounted) return;
