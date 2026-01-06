@@ -173,7 +173,7 @@ class _Screen3State extends State<Screen3> {
                           ),
                         );
     if (!mounted) return;
-                        if (updatedKey != null && updatedKey != d.iconKey) {
+                        if (updatedKey != null) {
                           setState(() => d.iconKey = updatedKey);
                         }
                     },
