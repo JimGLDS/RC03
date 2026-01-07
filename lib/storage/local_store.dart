@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models.dart';
@@ -150,6 +150,7 @@ class LocalStore {
       
         'isGas': r.isGas,
         'gasOdoHundredths': r.gasOdoHundredths,
+        'segHundredthsFromPrev': r.segHundredthsFromPrev,
       };
 
   static RowDraft _rowFromMap(Map<String, dynamic> m) => RowDraft(
@@ -166,6 +167,7 @@ class LocalStore {
       
         isGas: (m['isGas'] ?? false) as bool,
         gasOdoHundredths: m['gasOdoHundredths'] as int?,
+        segHundredthsFromPrev: m['segHundredthsFromPrev'] as int?,
       );
 
   static Future<void> _writeIndex(List<RollchartMeta> metas) async {

@@ -40,6 +40,7 @@ class RowDraft {
 
   bool isGas;
   int? gasOdoHundredths;
+  int? segHundredthsFromPrev;
 
   // Derived / computed (do not edit directly)
   int? trueMileHundredths;     // absolute mile from rollchart start (hundredths)
@@ -59,6 +60,7 @@ class RowDraft {
     this.resetLabel,
     this.isGas = false,
     this.gasOdoHundredths,
+    this.segHundredthsFromPrev,
   });
 
   /// COPY CONSTRUCTOR (for edit workflows)
@@ -76,6 +78,7 @@ class RowDraft {
         resetLabel = other.resetLabel,
         isGas = other.isGas,
         gasOdoHundredths = other.gasOdoHundredths,
+        segHundredthsFromPrev = other.segHundredthsFromPrev,
         trueMileHundredths = other.trueMileHundredths,
         remainingHundredths = other.remainingHundredths,
         nextGasHundredths = other.nextGasHundredths;

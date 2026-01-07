@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import '../models.dart';
@@ -59,6 +59,7 @@ class ProjectBundleV1 {
         'resetLabel': r.resetLabel,
         'isGas': r.isGas,
         'gasOdoHundredths': r.gasOdoHundredths,
+        'segHundredthsFromPrev': r.segHundredthsFromPrev,
       };
 
   static RowDraft _rowFromMap(Map<String, dynamic> m) => RowDraft(
@@ -74,6 +75,7 @@ class ProjectBundleV1 {
         resetLabel: m['resetLabel'] as String?,
         isGas: (m['isGas'] ?? false) as bool,
         gasOdoHundredths: m['gasOdoHundredths'] as int?,
+        segHundredthsFromPrev: m['segHundredthsFromPrev'] as int?,
       );
 
   // ---------- Base64 helpers ----------
