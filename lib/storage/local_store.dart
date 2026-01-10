@@ -138,6 +138,7 @@ class LocalStore {
 
   static Map<String, dynamic> _rowToMap(RowDraft r) => {
         'odoHundredths': r.odoHundredths,
+        'segHundredthsFromPrev': r.segHundredthsFromPrev,
         'surface': r.surface.index,
         'iconKey': r.iconKey,
         'tags': r.tags,
@@ -154,6 +155,7 @@ class LocalStore {
 
   static RowDraft _rowFromMap(Map<String, dynamic> m) => RowDraft(
         odoHundredths: (m['odoHundredths'] ?? 0) as int,
+        segHundredthsFromPrev: (m['segHundredthsFromPrev'] ?? 0) as int,
         surface: SurfaceType.values[(m['surface'] ?? 0) as int],
         iconKey: (m['iconKey'] ?? 'T01') as String,
         tags: (m['tags'] ?? '') as String,

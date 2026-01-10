@@ -25,6 +25,7 @@ String formatHundredths(int v) {
 
 class RowDraft {
   int odoHundredths;
+  int segHundredthsFromPrev; // distance from previous record to this record (hundredths)
   SurfaceType surface;
   String iconKey;
   String decisionKey;
@@ -47,6 +48,7 @@ class RowDraft {
   int? nextGasHundredths;      // distance to NEXT gas (hundredths), strictly after current
   RowDraft({
     required this.odoHundredths,
+    this.segHundredthsFromPrev = 0,
     required this.surface,
     required this.iconKey,
     this.decisionKey = '',
@@ -64,6 +66,7 @@ class RowDraft {
   /// COPY CONSTRUCTOR (for edit workflows)
   RowDraft.clone(RowDraft other)
       : odoHundredths = other.odoHundredths,
+        segHundredthsFromPrev = other.segHundredthsFromPrev,
         surface = other.surface,
         iconKey = other.iconKey,
         decisionKey = other.decisionKey,
@@ -176,4 +179,3 @@ RollchartDerivedSummary recomputeRollchartDerived(List<RowDraft> rows) {
     nextGasFromStartHundredths: startDist,
   );
 }
-
