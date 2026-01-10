@@ -84,6 +84,19 @@ class RowDraft {
         nextGasHundredths = other.nextGasHundredths;
 }
 ///////////////////////////////////////////////////////////////////////////////
+
+/// Rebuilds segHundredthsFromPrev for every row based on neighboring odoHundredths.
+/// This does NOT modify odoHundredths or reset logic; it only keeps persisted segment lengths in sync
+/// after insert/delete/edit/reorder while the editor is still using existing odo values.
+void rebuildSegFromPrev(List<RowDraft> rows) {
+  if (rows.isEmpty) return;
+  rows[0].segHundredthsFromPrev = 0;
+  for (int i = 1; i < rows.length; i++) {
+    final d = rows[i].odoHundredths - rows[i - 1].odoHundredths;
+    rows[i].segHundredthsFromPrev = d < 0 ? 0 : d;
+  }
+}
+
 // ROLLCHART DERIVED METRICS
 //
 // This recomputes "true mile", "remaining miles", and "distance to NEXT gas"
@@ -118,6 +131,8 @@ class RollchartDerivedSummary {
 /// this will populate them. If those fields don't exist yet, you can still use the returned summary
 /// and/or compute via the helper arrays below.
 RollchartDerivedSummary recomputeRollchartDerived(List<RowDraft> rows) {
+  // 0) Keep persisted segment lengths in sync with current odo values.
+  rebuildSegFromPrev(rows);
   // 1) Enforce Gas => Reset (your rule).
   for (final r in rows) {
     if (r.isGas && !r.isReset) {
