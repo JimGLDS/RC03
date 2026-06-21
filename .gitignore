@@ -1,0 +1,22 @@
+# Flutter / Dart
+.dart_tool/
+build/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs / temp
+*.log
+
+# Rollchart local backups
+*.bak
+
+
+# Local build artifacts
+_artifacts/
+
