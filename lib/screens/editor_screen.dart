@@ -251,6 +251,41 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     }
   }
 
+  // Builds a flat display list interleaving row indices (int) with segment
+  // summary items (_SegTotal) inserted after each reset row.
+  List<Object> _buildDisplayList() {
+    final items = <Object>[];
+    int legNo = 0;
+    for (int i = 0; i < rows.length; i++) {
+      items.add(i);
+      if (rows[i].isReset) {
+        legNo++;
+        items.add(_SegTotal(legNo, rows[i].odoHundredths));
+      }
+    }
+    return items;
+  }
+
+  Widget _segSummaryRow(BuildContext context, _SegTotal s) {
+    final color = Theme.of(context).colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          const Expanded(child: Divider()),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              'Leg ${s.legNo}  •  ${formatHundredths(s.hundredths)} mi',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color),
+            ),
+          ),
+          const Expanded(child: Divider()),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _listCtrl.dispose();
@@ -320,83 +355,91 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           constraints: const BoxConstraints(maxWidth: maxPaperWidth),
           child: rows.isEmpty
               ? const Center(child: Text('No rows yet.\nTap Add Row.', textAlign: TextAlign.center))
-              : ListView.separated(
-                  controller: _listCtrl,
-                  padding: EdgeInsets.fromLTRB(10, 10, 10, 120 + bottomInset),
-                  itemCount: rows.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) {
-                    final r = rows[i];
-                    final recNo = i + 1;
+              : Builder(builder: (context) {
+                  final displayList = _buildDisplayList();
+                  return ListView.separated(
+                    controller: _listCtrl,
+                    padding: EdgeInsets.fromLTRB(10, 10, 10, 120 + bottomInset),
+                    itemCount: displayList.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, di) {
+                      final item = displayList[di];
+                      if (item is _SegTotal) {
+                        return _segSummaryRow(context, item);
+                      }
+                      final i = item as int;
+                      final r = rows[i];
+                      final recNo = i + 1;
 
-                    return InkWell(
-                      onTap: isComplete ? null : () => editRow(i),
-                      onLongPress: isComplete ? null : () => showRowMenu(i),
-                      child: Card(
-                        elevation: 1,
-                        margin: EdgeInsets.zero,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Record # + ODO
-                              SizedBox(
-                                width: 130,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 18,
-                                      child: Center(
-                                        child: Text(
-                                          '$recNo',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      return InkWell(
+                        onTap: isComplete ? null : () => editRow(i),
+                        onLongPress: isComplete ? null : () => showRowMenu(i),
+                        child: Card(
+                          elevation: 1,
+                          margin: EdgeInsets.zero,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Record # + ODO
+                                SizedBox(
+                                  width: 130,
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 18,
+                                        child: Center(
+                                          child: Text(
+                                            '$recNo',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w700,
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Text(
-                                      formatHundredths(r.odoHundredths),
-                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 16),
+                                      Text(
+                                        formatHundredths(r.odoHundredths),
+                                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
 
-                              // Icon
-                              IconGlyph(
-                                iconKey: r.iconKey,
-                                size: 52,
-                                padding: 1,
-                              ),
-                              const SizedBox(width: 10),
-
-                              // Text block
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(surfaceText(r.surface), style: const TextStyle(fontWeight: FontWeight.w800)),
-                                    const SizedBox(height: 2),
-                                    Text(rollText(r), maxLines: 1, overflow: TextOverflow.ellipsis),
-                                  ],
+                                // Icon
+                                IconGlyph(
+                                  iconKey: r.iconKey,
+                                  size: 52,
+                                  padding: 1,
                                 ),
-                              ),
+                                const SizedBox(width: 10),
 
-                              const SizedBox(width: 8),
-                              const Icon(Icons.more_vert, size: 18),
-                            ],
+                                // Text block
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(surfaceText(r.surface), style: const TextStyle(fontWeight: FontWeight.w800)),
+                                      const SizedBox(height: 2),
+                                      Text(rollText(r), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(width: 8),
+                                const Icon(Icons.more_vert, size: 18),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  );
+                }),
         ),
       ),
 
@@ -434,4 +477,10 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       ),
     );
   }
+}
+
+class _SegTotal {
+  final int legNo;
+  final int hundredths;
+  const _SegTotal(this.legNo, this.hundredths);
 }
