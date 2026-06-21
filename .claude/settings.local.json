@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh pr create --title 'RC41: safe resets, S3 workflow, and editor bug fixes' --body ' *)",
+      "PowerShell(winget install *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\Owner\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--rollchart-bldr-work\\\\0892b73b-3b65-4da5-b93f-8b9b78af34ba\\\\tasks\\\\b3kc1t0lc.output\" -Wait)",
+      "Bash(Select-String -Pattern \"Successfully|Failed|error|complete|installed\" -SimpleMatch)",
+      "PowerShell(gh *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(cmd /c \"dir \"\"C:\\\\Program Files\\\\\"\" /b 2>&1\")",
+      "PowerShell(cmd /c \"winget list GitHub.cli 2>&1\")",
+      "PowerShell(cmd /c \"git -C D:\\\\rollchart-bldr-work config --get remote.origin.url 2>&1\")",
+      "Bash(git credential *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git -c core.autocrlf=false add -A)",
+      "Bash(git -c core.autocrlf=false commit --no-edit)",
+      "Bash(git config *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
