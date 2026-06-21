@@ -65,7 +65,7 @@ class _Screen2State extends State<Screen2> {
             LayoutBuilder(
               builder: (context, c) {
                 const spacing = 10.0;
-                final tile = (c.maxWidth - (spacing * 2)) / 3.0;
+                final tile = ((c.maxWidth - (spacing * 2)) / 3.0).clamp(0.0, 120.0);
                 final h = (tile * 3) + (spacing * 2);
                 return SizedBox(
                   height: h,
