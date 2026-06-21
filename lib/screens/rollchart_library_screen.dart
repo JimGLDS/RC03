@@ -41,29 +41,36 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
     }
 
     _snack('Opening file picker…');
+    debugPrint('[IMPORT] picker launching');
     try {
       final res = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
         withData: true,
       );
+      debugPrint('[IMPORT] picker returned: ${res?.files.length} file(s)');
       if (res == null || res.files.isEmpty) {
         _snack('No file selected.');
         return;
       }
 
       final bytes = res.files.single.bytes;
+      debugPrint('[IMPORT] bytes: ${bytes?.length}');
       if (bytes == null || bytes.isEmpty) {
         _snack('File read returned empty data. Try a different browser or file.');
         return;
       }
 
       final text = utf8.decode(bytes);
+      debugPrint('[IMPORT] parsed text length: ${text.length}');
       final bundle = ProjectBundleV1.fromJsonString(text);
+      debugPrint('[IMPORT] bundle name: ${bundle.name}, rows: ${bundle.rows.length}');
 
       await ProjectBundleIO.applyToStore(bundle);
+      debugPrint('[IMPORT] applyToStore done');
 
       await refresh();
+      debugPrint('[IMPORT] refresh done, mounted=$mounted');
       if (!mounted) return;
 
       Navigator.push(
@@ -71,7 +78,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
         MaterialPageRoute(builder: (_) => RollChartEditorScreen(chartName: bundle.name)),
       ).then((_) => refresh());
     } catch (e, st) {
-      debugPrint('Import error: $e\n$st');
+      debugPrint('[IMPORT] error: $e\n$st');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Import failed: $e'), duration: const Duration(seconds: 8)),

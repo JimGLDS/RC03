@@ -351,15 +351,21 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           IconButton(
             tooltip: 'Export Project JSON',
             icon: const Icon(Icons.folder),
-            onPressed: isComplete ? () async {
+            onPressed: () async {
               await _save();
-              await ProjectBundleShare.exportProjectJson(widget.chartName);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(RollchartExporter.isWeb ? 'Downloaded project JSON' : 'Shared project JSON')),
-                );
+              try {
+                await ProjectBundleShare.exportProjectJson(widget.chartName);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(RollchartExporter.isWeb ? 'Downloaded project JSON' : 'Shared project JSON')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export failed: $e'), duration: const Duration(seconds: 8)));
+                }
               }
-            } : null,
+            },
           ),
           IconButton(
             tooltip: 'Export CSV',
