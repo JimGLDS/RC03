@@ -139,7 +139,10 @@ class RollchartExporter {
 
     for (var i = 0; i < rows.length; i++) {
       final m = segHund[i] / 100.0;
-      final k = surfKey(rows[i].surface);
+      // Attribute each segment to the surface type at the START of that segment
+      // (the previous row's type), because you travel ON that surface until the
+      // next row changes it. Row 0 has no predecessor so use its own type.
+      final k = surfKey(i > 0 ? rows[i - 1].surface : rows[i].surface);
       if (milesBy.containsKey(k)) {
         milesBy[k] = (milesBy[k] ?? 0.0) + m;
       }
@@ -441,7 +444,7 @@ final totalMiles = rows.isEmpty ? 0.0 : (trueHundPdf.last / 100.0);
 
     for (var i = 0; i < rows.length; i++) {
       final m = segHundPdf[i] / 100.0;
-      final k = _surfKeyPdf(rows[i].surface);
+      final k = _surfKeyPdf(i > 0 ? rows[i - 1].surface : rows[i].surface);
       if (milesBy.containsKey(k)) {
         milesBy[k] = (milesBy[k] ?? 0.0) + m;
       }
