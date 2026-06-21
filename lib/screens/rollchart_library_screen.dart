@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
@@ -34,16 +35,27 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
   }
 
   Future<void> importProjectJson() async {
+    void _snack(String msg) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 6)));
+    }
+
     try {
       final res = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
         withData: true,
       );
-      if (res == null || res.files.isEmpty) return;
+      if (res == null || res.files.isEmpty) {
+        _snack('No file selected.');
+        return;
+      }
 
       final bytes = res.files.single.bytes;
-      if (bytes == null || bytes.isEmpty) return;
+      if (bytes == null || bytes.isEmpty) {
+        _snack('File read returned empty data. Try a different browser or file.');
+        return;
+      }
 
       final text = utf8.decode(bytes);
       final bundle = ProjectBundleV1.fromJsonString(text);
@@ -57,10 +69,11 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
         context,
         MaterialPageRoute(builder: (_) => RollChartEditorScreen(chartName: bundle.name)),
       ).then((_) => refresh());
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('Import error: $e\n$st');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Import failed: $e')),
+        SnackBar(content: Text('Import failed: $e'), duration: const Duration(seconds: 8)),
       );
     }
   }
