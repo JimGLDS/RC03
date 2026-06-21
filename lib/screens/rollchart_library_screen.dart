@@ -200,12 +200,12 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       appBar: AppBar(
         title: const Text('Rollchart Library'),
         actions: [
+          IconButton(onPressed: refresh, tooltip: 'Refresh', icon: const Icon(Icons.refresh)),
           IconButton(
             onPressed: importProjectJson,
             tooltip: 'Import Project JSON',
             icon: const Icon(Icons.move_to_inbox),
           ),
-          IconButton(onPressed: refresh, tooltip: 'Refresh', icon: const Icon(Icons.refresh)),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
