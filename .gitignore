@@ -13,8 +13,17 @@ Thumbs.db
 # Logs / temp
 *.log
 
-# Rollchart local backups
+# Rollchart local backups / scratch files
 *.bak
+*.bak_*
+*.bad-*
+*_SAVE.png
+*_snip*.txt
+*_dump.txt
+all_source.txt
+latest_source.txt
+*.bak.android-prep
+WIP_before_restore.patch
 
 
 # Local build artifacts
