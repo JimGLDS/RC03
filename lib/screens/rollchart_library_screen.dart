@@ -203,7 +203,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
           IconButton(
             onPressed: importProjectJson,
             tooltip: 'Import Project JSON',
-            icon: const Icon(Icons.upload_file),
+            icon: const Icon(Icons.input),
           ),
           IconButton(onPressed: refresh, tooltip: 'Refresh', icon: const Icon(Icons.refresh)),
         ],

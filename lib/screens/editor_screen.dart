@@ -350,7 +350,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           ),
           IconButton(
             tooltip: 'Export Project JSON',
-            icon: const Icon(Icons.file_download),
+            icon: const Icon(Icons.share),
             onPressed: () async {
               await _save();
               try {
