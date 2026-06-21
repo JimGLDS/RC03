@@ -251,6 +251,42 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     }
   }
 
+  Widget _buildSummaryFooter(BuildContext context) {
+    final total = rows.isEmpty ? 0 : (rows.last.trueMileHundredths ?? 0);
+    final legCount = rows.where((r) => r.isReset).length;
+    int? firstGas;
+    for (final r in rows) {
+      if (r.isGas) { firstGas = r.trueMileHundredths; break; }
+    }
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _footerStat('TOTAL', '${formatHundredths(total)} mi'),
+          _footerStat('LEGS', '$legCount'),
+          _footerStat('1ST GAS', firstGas == null ? '—' : '${formatHundredths(firstGas)} mi'),
+        ],
+      ),
+    );
+  }
+
+  Widget _footerStat(String label, String value) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900)),
+      ],
+    );
+  }
+
   // Builds a flat display list interleaving row indices (int) with segment
   // summary items (_SegTotal) inserted after each reset row.
   List<Object> _buildDisplayList() {
@@ -355,11 +391,13 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           constraints: const BoxConstraints(maxWidth: maxPaperWidth),
           child: rows.isEmpty
               ? const Center(child: Text('No rows yet.\nTap Add Row.', textAlign: TextAlign.center))
-              : Builder(builder: (context) {
+              : Column(
+                  children: [
+                    Expanded(child: Builder(builder: (context) {
                   final displayList = _buildDisplayList();
                   return ListView.separated(
                     controller: _listCtrl,
-                    padding: EdgeInsets.fromLTRB(10, 10, 10, 120 + bottomInset),
+                    padding: EdgeInsets.fromLTRB(10, 10, 10, 100 + bottomInset),
                     itemCount: displayList.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, di) {
@@ -439,7 +477,10 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
                       );
                     },
                   );
-                }),
+                })),
+                    _buildSummaryFooter(context),
+                  ],
+                ),
         ),
       ),
 
