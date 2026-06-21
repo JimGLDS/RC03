@@ -40,6 +40,7 @@ class _RollchartLibraryScreenState extends State<RollchartLibraryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 6)));
     }
 
+    _snack('Opening file picker…');
     try {
       final res = await FilePicker.platform.pickFiles(
         type: FileType.custom,

@@ -468,8 +468,14 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
                                   ),
                                 ),
 
-                                const SizedBox(width: 8),
-                                const Icon(Icons.more_vert, size: 18),
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: isComplete ? null : () => showRowMenu(i),
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                    child: Icon(Icons.more_vert, size: 18),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
