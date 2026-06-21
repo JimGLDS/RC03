@@ -194,3 +194,16 @@ RollchartDerivedSummary recomputeRollchartDerived(List<RowDraft> rows) {
     nextGasFromStartHundredths: startDist,
   );
 }
+
+// When a reset row is deleted or toggled off, the rows that were in the segment
+// immediately after that reset have ODO values relative to the (now-gone) reset.
+// This adds `amount` (the deleted/toggled reset's odoHundredths) to every row
+// from fromIndex up to and including the next reset, then stops.
+// The next reset itself must also be updated because its odo is its segment length,
+// which now includes the merged segment.
+void shiftOdoForward(List<RowDraft> rows, int fromIndex, int amount) {
+  for (int i = fromIndex; i < rows.length; i++) {
+    rows[i].odoHundredths += amount;
+    if (rows[i].isReset) break;
+  }
+}

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models.dart';
 import '../../widgets/icon_sprite.dart';
-
-
 import '../../widgets/glove_keypad.dart';
 import '../icon_editor_screen.dart';
+
 class Screen3 extends StatefulWidget {
   final int recNo;
   final RowDraft draft;
@@ -31,7 +30,6 @@ class _Screen3State extends State<Screen3> {
   void initState() {
     super.initState();
     d = widget.draft;
-
     roadNoCtl = TextEditingController(text: (d.roadNo ?? '').trim());
     roadNameCtl = TextEditingController(text: (d.roadName ?? '').trim());
   }
@@ -93,7 +91,6 @@ class _Screen3State extends State<Screen3> {
     });
   }
 
-
   Future<void> promptForResetName({bool turningOn = false}) async {
     final initial = (d.resetLabel ?? '').trim();
 
@@ -105,7 +102,7 @@ class _Screen3State extends State<Screen3> {
     );
     if (!mounted) return;
     if (result == null) {
-      // Cancel => if we were turning on, revert the switch.
+      // User cancelled — if we were turning reset on, revert it.
       if (turningOn) {
         setState(() {
           d.isReset = false;
@@ -121,6 +118,34 @@ class _Screen3State extends State<Screen3> {
     });
   }
 
+  // FIX: Gas toggle now forces isReset=true and prompts for a reset name
+  // if one hasn't been set yet. A gas stop is always also a reset point —
+  // the model enforces this, but now the UI reflects it immediately too.
+  Future<void> onGasToggled(bool v) async {
+    if (v) {
+      // Turning Gas ON: record gas odo, force Reset ON.
+      setState(() {
+        d.isGas = true;
+        d.gasOdoHundredths = d.odoHundredths;
+        d.isReset = true;
+      });
+      // If there's no reset name yet, prompt for one now.
+      final hasName = (d.resetLabel ?? '').trim().isNotEmpty;
+      if (!hasName) {
+        await promptForResetName(turningOn: true);
+      }
+    } else {
+      // Turning Gas OFF: clear gas fields.
+      // NOTE: we do NOT automatically turn Reset off — the user may want
+      // to keep this as a reset point even without gas. They can turn
+      // Reset off manually if desired.
+      setState(() {
+        d.isGas = false;
+        d.gasOdoHundredths = null;
+      });
+    }
+  }
+
   void trySave() {
     applyRoadEdits();
 
@@ -132,7 +157,6 @@ class _Screen3State extends State<Screen3> {
         );
         return;
       }
-      // Duplicate check is already enforced in the dialog, but keep this as safety:
       final want = label.toLowerCase();
       final used = widget.existingResetNames.map((e) => e.trim().toLowerCase()).toSet();
       if (used.contains(want)) {
@@ -158,6 +182,7 @@ class _Screen3State extends State<Screen3> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Summary card at top
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -167,16 +192,16 @@ class _Screen3State extends State<Screen3> {
                     InkWell(
                       onTap: () async {
                         final updatedKey = await Navigator.push<String>(
-                        context,
-                        MaterialPageRoute(
+                          context,
+                          MaterialPageRoute(
                             builder: (_) => IconEditorScreen(iconKey: d.iconKey),
                           ),
                         );
-    if (!mounted) return;
+                        if (!mounted) return;
                         if (updatedKey != null) {
                           setState(() => d.iconKey = updatedKey);
                         }
-                    },
+                      },
                       child: IconGlyph(
                         iconKey: d.iconKey,
                         size: 72,
@@ -213,6 +238,7 @@ class _Screen3State extends State<Screen3> {
 
             const SizedBox(height: 12),
 
+            // Edit controls
             Expanded(
               child: SingleChildScrollView(
                 child: Card(
@@ -221,6 +247,7 @@ class _Screen3State extends State<Screen3> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Road fields
                         const Text('Road', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                         const SizedBox(height: 12),
                         Row(
@@ -266,47 +293,31 @@ class _Screen3State extends State<Screen3> {
                         const Divider(),
                         const SizedBox(height: 12),
 
+                        // Reset toggle
                         Row(
                           children: [
                             const Text('Reset?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                             const Spacer(),
                             Switch(
                               value: d.isReset,
-                              onChanged: (v) async {
-                                if (v) {
-                                  // Flip on, then require name via dialog.
-                                  setState(() => d.isReset = true);
-                                  await promptForResetName(turningOn: true);
-                                } else {
-                                  setState(() {
-                                    d.isReset = false;
-                                    d.resetLabel = '';
-                                  });
-                                }
-                              },
+                              onChanged: d.isGas
+                                  ? null  // locked ON when gas is on — gas always requires a reset
+                                  : (v) async {
+                                      if (v) {
+                                        setState(() => d.isReset = true);
+                                        await promptForResetName(turningOn: true);
+                                      } else {
+                                        setState(() {
+                                          d.isReset = false;
+                                          d.resetLabel = '';
+                                        });
+                                      }
+                                    },
                             ),
                           ],
                         ),
 
-
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            const Text('Gas?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                            const Spacer(),
-                            Switch(
-                              value: d.isGas,
-                              onChanged: (v) {
-                                setState(() {
-                                  d.isGas = v;
-                                  if (v) {
-                                    d.gasOdoHundredths = d.odoHundredths;
-                                  }
-                                });
-                              },
-                            ),
-                          ],
-                        ),
+                        // Reset name display/edit (shown when reset is on)
                         if (d.isReset) ...[
                           const SizedBox(height: 8),
                           Row(
@@ -326,6 +337,30 @@ class _Screen3State extends State<Screen3> {
                             ],
                           ),
                         ],
+
+                        const SizedBox(height: 12),
+
+                        // Gas toggle
+                        Row(
+                          children: [
+                            const Text('Gas?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                            const Spacer(),
+                            Switch(
+                              value: d.isGas,
+                              onChanged: (v) async => await onGasToggled(v),
+                            ),
+                          ],
+                        ),
+
+                        // Helpful note when gas is on
+                        if (d.isGas)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Text(
+                              'Gas stop requires a reset — Reset is locked ON.',
+                              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -335,6 +370,7 @@ class _Screen3State extends State<Screen3> {
 
             const SizedBox(height: 12),
 
+            // Save / Back buttons
             Row(
               children: [
                 Expanded(
@@ -361,104 +397,3 @@ class _Screen3State extends State<Screen3> {
     );
   }
 }
-
-class _ResetNameDialog extends StatefulWidget {
-  final String initial;
-  final List<String> existingResetNames;
-
-  const _ResetNameDialog({
-    required this.initial,
-    required this.existingResetNames,
-  });
-
-  @override
-  State<_ResetNameDialog> createState() => _ResetNameDialogState();
-}
-
-class _ResetNameDialogState extends State<_ResetNameDialog> {
-  late final TextEditingController ctl;
-  String? errorText;
-
-  @override
-  void initState() {
-    super.initState();
-    ctl = TextEditingController(text: widget.initial);
-  }
-
-  @override
-  void dispose() {
-    ctl.dispose();
-    super.dispose();
-  }
-
-  bool isDuplicate(String name) {
-    final want = name.trim().toLowerCase();
-    final used = widget.existingResetNames.map((e) => e.trim().toLowerCase()).toSet();
-    return want.isNotEmpty && used.contains(want);
-  }
-
-  void validate() {
-    final t = ctl.text.trim();
-    if (t.isEmpty) {
-      setState(() => errorText = 'Reset name is required.');
-      return;
-    }
-    if (isDuplicate(t)) {
-      setState(() => errorText = 'That reset name is already used.');
-      return;
-    }
-    setState(() => errorText = null);
-  }
-
-
-  Future<void> openKeypad() async {
-    final result = await showGloveKeypad(
-      context: context,
-      mode: GloveKeypadMode.alpha,
-      initialText: ctl.text,
-      title: 'Reset Name',
-    );
-    if (result == null) return;
-    setState(() {
-      ctl.text = result;
-    });
-    validate();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Reset Name'),
-      content: TextField(
-        controller: ctl,
-        readOnly: true,
-        showCursor: true,
-        enableInteractiveSelection: false,
-        autofocus: true,
-        decoration: InputDecoration(
-          labelText: 'Enter reset name',
-          errorText: errorText,
-        ),
-        onTap: () async => await openKeypad(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, null),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            validate();
-            if (errorText != null) return;
-            Navigator.pop(context, ctl.text.trim());
-          },
-          child: const Text('OK'),
-        ),
-      ],
-    );
-  }
-}
-
-
-
-

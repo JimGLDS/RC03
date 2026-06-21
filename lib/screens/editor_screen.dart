@@ -5,6 +5,7 @@ import 'wizard/screen1.dart';
 import '../export/exporter.dart';
 import '../storage/local_store.dart';
 import '../project/project_bundle_share.dart';
+
 class RollChartEditorScreen extends StatefulWidget {
   final String chartName;
   const RollChartEditorScreen({super.key, required this.chartName});
@@ -15,7 +16,6 @@ class RollChartEditorScreen extends StatefulWidget {
 
 class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
   final ScrollController _listCtrl = ScrollController();
-
 
   @override
   void initState() {
@@ -58,7 +58,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     _listCtrl.jumpTo(_listCtrl.position.maxScrollExtent);
   }
 
-// New row ODO must increase, except the first row AFTER a RESET row.
+  // New row ODO must increase, except the first row AFTER a RESET row.
   int? minOdoForNextRowExclusive() {
     if (rows.isEmpty) return null;
     if (rows.last.isReset) return null;
@@ -109,7 +109,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       bits.add(label.isEmpty ? 'RESET' : 'RESET $label');
     }
 
-    return (bits.isEmpty ? '—' : bits.join(' • ')).replaceAll('[','').replaceAll(']','');
+    return (bits.isEmpty ? '-' : bits.join(' * ')).replaceAll('[','').replaceAll(']','');
   }
 
   Future<void> editRow(int index) async {
@@ -143,20 +143,32 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
 
     if (updated != null) {
       setState(() {
+        final origOdo = r.odoHundredths;
+        final origWasReset = r.isReset;
         rows[index] = updated;
+        if (origWasReset && !updated.isReset && index + 1 < rows.length) {
+          shiftOdoForward(rows, index + 1, origOdo);
+        } else if (!origWasReset && updated.isReset && index + 1 < rows.length) {
+          shiftOdoForward(rows, index + 1, -updated.odoHundredths);
+        }
         recomputeRollchartDerived(rows);
         carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       });
       await _save();
-}
+    }
   }
 
   Future<void> insertRowAt(int index) async {
-    // Insert BEFORE index. Must fall between neighbors.
+    // FIX: If the row immediately before the insert point is a RESET,
+    // the new row starts a fresh ODO segment from 0, so there is no
+    // lower bound. Previously this passed the reset row's ODO as the
+    // minimum, which incorrectly blocked any ODO entry less than that value.
     int? minExclusive;
     if (index > 0 && !rows[index - 1].isReset) {
       minExclusive = rows[index - 1].odoHundredths;
     }
+    // null when previous row is a reset (new segment starts at 0)
+
     final maxExclusive = rows[index].odoHundredths;
 
     final draft = await Navigator.push<RowDraft>(
@@ -179,7 +191,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         recomputeRollchartDerived(rows);
       });
       await _save();
-}
+    }
   }
 
   Future<void> deleteRowAt(int index) async {
@@ -189,18 +201,6 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
         title: const Text('Delete row?'),
         content: Text('Delete row ${index + 1}? This cannot be undone.'),
         actions: [
-          IconButton(
-            tooltip: isComplete ? 'Mark as In Progress' : 'Mark as Done',
-            icon: Icon(isComplete ? Icons.check_circle : Icons.check_circle_outline),
-            onPressed: () async {
-              setState(() => isComplete = !isComplete);
-              await _save();
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(isComplete ? 'Saved and marked DONE' : 'Saved and marked In Progress')),
-              );
-            },
-          ),
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
         ],
@@ -208,30 +208,35 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
     );
     if (ok == true) {
       setState(() {
+        final wasReset = rows[index].isReset;
+        final deletedOdo = rows[index].odoHundredths;
         rows.removeAt(index);
+        if (wasReset && index < rows.length) {
+          shiftOdoForward(rows, index, deletedOdo);
+        }
         recomputeRollchartDerived(rows);
         carrySurface = rows.isEmpty ? SurfaceType.DT : rows.last.surface;
       });
       await _save();
-}
+    }
   }
 
   Future<void> showRowMenu(int index) async {
     final choice = await showModalBottomSheet<String>(
       context: context,
-      builder: (_) => SafeArea(
+      builder: (sheetCtx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.add),
               title: const Text('Insert row before'),
-              onTap: () => Navigator.pop(context, 'insert'),
+              onTap: () => Navigator.pop(sheetCtx, 'insert'),
             ),
             ListTile(
               leading: const Icon(Icons.delete),
               title: const Text('Delete row'),
-              onTap: () => Navigator.pop(context, 'delete'),
+              onTap: () => Navigator.pop(sheetCtx, 'delete'),
             ),
             const SizedBox(height: 8),
           ],
@@ -316,7 +321,7 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
           child: rows.isEmpty
               ? const Center(child: Text('No rows yet.\nTap Add Row.', textAlign: TextAlign.center))
               : ListView.separated(
-                   controller: _listCtrl,
+                  controller: _listCtrl,
                   padding: EdgeInsets.fromLTRB(10, 10, 10, 120 + bottomInset),
                   itemCount: rows.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 8),
@@ -331,11 +336,11 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
                         elevation: 1,
                         margin: EdgeInsets.zero,
                         child: Padding(
-                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Record # + ODO (your preferred layout)
+                              // Record # + ODO
                               SizedBox(
                                 width: 130,
                                 child: Row(
@@ -398,33 +403,33 @@ class _RollChartEditorScreenState extends State<RollChartEditorScreen> {
       floatingActionButton: Padding(
         padding: EdgeInsets.only(bottom: bottomInset + MediaQuery.of(context).padding.bottom),
         child: FloatingActionButton.extended(
-        onPressed: isComplete ? null : () async {
-          final recNo = rows.length + 1;
-          final draft = await Navigator.push<RowDraft>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => Screen1(
-                recNo: recNo,
-                carrySurface: carrySurface,
-                minOdoHundredthsExclusive: minOdoForNextRowExclusive(),
-                maxOdoHundredthsExclusive: null,
-                existingResetNames: existingResetNames(),
-                initialDraft: null,
+          onPressed: isComplete ? null : () async {
+            final recNo = rows.length + 1;
+            final draft = await Navigator.push<RowDraft>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => Screen1(
+                  recNo: recNo,
+                  carrySurface: carrySurface,
+                  minOdoHundredthsExclusive: minOdoForNextRowExclusive(),
+                  maxOdoHundredthsExclusive: null,
+                  existingResetNames: existingResetNames(),
+                  initialDraft: null,
+                ),
               ),
-            ),
-          );
+            );
 
-          if (draft != null) {
-            setState(() {
-              rows.add(draft);
-              carrySurface = draft.surface;
-            });
-            await _save();
-             WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-}
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Add Row'),
+            if (draft != null) {
+              setState(() {
+                rows.add(draft);
+                carrySurface = draft.surface;
+              });
+              await _save();
+              WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+            }
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Add Row'),
         ),
       ),
     );
